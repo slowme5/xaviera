@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+
+<html lang="id">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>XAVIERA FAMILY — ESTATE OPERATIONS</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link href="assets/css/style.css" rel="stylesheet"/>
+<link href="assets/css/xaviera-theme.css" rel="stylesheet"/>
+<link href="assets/css/xaviera-v2.css" rel="stylesheet"/>
+<link href="assets/css/xaviera-login-fix.css" rel="stylesheet"/>
+<style>
+        .leaflet-popup-content-wrapper, .leaflet-popup-tip { background-color: #100d0b !important; border: 1px solid rgba(202,165,92,.22) !important; color: #f4ead8 !important; }
+        .leaflet-popup-close-button { color: #d2ad63 !important; }
+    </style>
+</head>
+<body class="text-zinc-100 overflow-hidden bg-zinc-950">
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-[#070708] p-4 transition-colors duration-500" id="login-screen">
+<div class="x-login-bg"></div>
+<div class="x-login-shell">
+<div class="x-login-topline"></div>
+<div class="x-login-brand">
+<img alt="Xaviera Family Crest" class="xaviera-login-logo" src="assets/img/xaviera-family-logo.png"/>
+<div class="xaviera-login-kicker">PRIVATE ESTATE NETWORK</div>
+<h1 class="text-4xl text-orange-500 gang-title tracking-wider glow-text">XAVIERA FAMILY</h1>
+<p class="xaviera-login-subtitle">House Administration &amp; Asset Command</p><p class="x-login-brand-note">Private administration for assets, treasury, members, and internal records.</p>
+</div>
+<section class="x-login-access"><div class="x-login-access-head"><span>SECURE ACCESS</span><h2>Enter the Xaviera Estate</h2><p>Select your access level to continue into the private estate network.</p></div><form class="x-login-form" onsubmit="handleLogin(event)">
+<div class="group"><label class="block text-xs uppercase tracking-wider text-zinc-400 mb-2 font-semibold group-focus-within:text-orange-500">Pilih Otoritas Akses</label><select class="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-zinc-200 focus:outline-none focus:border-orange-500 cursor-pointer" id="login-role" onchange="toggleLoginInputs()"><option value="tamu"> GUEST / VISITOR </option><option value="president"> 👑 HEAD OF HOUSE </option><option value="vice_president"> ♜ DEPUTY HEAD </option><option value="treasury"> 💰 TREASURY KEEPER </option></select></div>
+<div class="hidden group" id="alias-container"><label class="block text-xs uppercase tracking-wider text-zinc-400 mb-2 font-semibold group-focus-within:text-orange-500">Nama / Alias Custodian</label><div class="relative"><span class="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500"><i class="fa-solid fa-user-tag"></i></span><input class="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 pl-10 text-zinc-200 focus:outline-none focus:border-orange-500" id="login-name" placeholder="Masukkan nama atau alias" type="text"/></div></div>
+<div class="hidden group" id="password-container"><label class="block text-xs uppercase tracking-wider text-zinc-400 mb-2 font-semibold group-focus-within:text-orange-500">Private Access Key</label><div class="relative"><span class="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500"><i class="fa-solid fa-lock"></i></span><input class="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 pl-10 text-zinc-200 focus:outline-none focus:border-orange-500" id="login-password" placeholder="Masukkan access key..." type="password"/></div></div>
+<button class="w-full bg-orange-600 hover:bg-orange-700 active:scale-95 text-white font-bold uppercase py-3 rounded-lg shadow-lg transition-all duration-200 text-sm flex items-center justify-center gap-2 group" type="submit">Enter The Estate <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i></button>
+</form><div class="x-login-security-note"><i class="fa-solid fa-shield-halved"></i><span>Restricted system · Authorized access only</span></div></section></div>
+</div>
+<div class="hidden h-screen relative flex" id="app-container">
+<aside class="sidebar-panel bg-zinc-950 border-r-2 border-orange-600 flex flex-col z-30 shadow-[5px_0_25px_rgba(0,0,0,0.8)] shrink-0" id="sidebar">
+<div class="shrink-0">
+<div class="p-5 border-b border-zinc-800 text-center bg-zinc-900/50 relative hover:bg-zinc-900 transition-colors group">
+<img alt="Xaviera Family" class="xaviera-sidebar-logo" src="assets/img/xaviera-family-logo.png"/>
+<h1 class="text-3xl text-orange-500 gang-title tracking-wider glow-text group-hover:scale-105 transition-transform duration-300">XAVIERA</h1>
+<p class="xaviera-sidebar-subtitle"><span></span> FAMILY ESTATE <span></span></p>
+<button aria-label="Tutup sidebar" class="sidebar-close-btn absolute top-4 right-4 md:hidden" onclick="closeSidebar()" title="Tutup sidebar" type="button"><i class="fa-solid fa-xmark"></i></button>
+</div>
+<div class="px-5 py-4 flex items-center gap-3 bg-gradient-to-r from-orange-950/20 to-transparent border-b border-zinc-900 hover:bg-zinc-900/60 cursor-pointer transition-colors group" onclick="showIDCard()">
+<div class="w-10 h-10 rounded-full bg-zinc-800 border border-orange-500 flex items-center justify-center text-orange-500 shadow-md group-hover:scale-110 group-hover:bg-orange-900/30" id="user-avatar-container"><i class="fa-solid fa-user-secret text-lg" id="user-icon"></i></div>
+<div class="flex-1"><h4 class="font-bold text-sm group-hover:text-orange-400 transition-colors" id="user-name">-</h4><span class="text-[10px] bg-orange-600/20 text-orange-400 px-2 py-0.5 rounded border border-orange-600/30 uppercase font-semibold" id="user-role-badge">-</span></div>
+<i class="fa-solid fa-id-card text-zinc-600 group-hover:text-orange-500 text-sm"></i>
+</div>
+</div>
+<nav class="sidebar-nav flex-1 overflow-y-auto sidebar-scroll">
+<div class="nav-section-label">OVERVIEW</div><button class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left font-semibold tracking-wide transition-all duration-200 bg-orange-600 text-white group" id="btn-dashboard" onclick="switchTab('dashboard')"><i class="fa-solid fa-gauge-high text-lg w-6 group-hover:rotate-12 transition-transform"></i> Command Chamber</button>
+<button class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left font-semibold tracking-wide text-zinc-400 hover:bg-zinc-900 hover:text-orange-500 hover:translate-x-1 transition-all group" id="btn-map" onclick="switchTab('map')"><i class="fa-solid fa-map-location-dot text-lg w-6 group-hover:scale-110 transition-transform"></i> Territory Intelligence</button>
+<div class="nav-section-label">HOUSE GOVERNANCE</div><button class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left font-semibold tracking-wide text-zinc-400 hover:bg-zinc-900 hover:text-orange-500 hover:translate-x-1 transition-all group" id="btn-roster" onclick="switchTab('roster')"><i class="fa-solid fa-users text-lg w-6 group-hover:scale-110 transition-transform"></i> House Directory</button>
+<button class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left font-semibold tracking-wide text-zinc-400 hover:bg-zinc-900 hover:text-orange-500 hover:translate-x-1 transition-all group" id="btn-rules" onclick="switchTab('rules')"><i class="fa-solid fa-scroll text-lg w-6 group-hover:scale-110 transition-transform"></i> House Codex</button>
+<div class="nav-section-label admin-only">OPERATIONS</div><button class="nav-btn admin-only w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left font-semibold tracking-wide text-zinc-400 hover:bg-zinc-900 hover:text-orange-500 hover:translate-x-1 transition-all group" id="btn-bisnis" onclick="switchTab('bisnis')"><i class="fa-solid fa-hand-holding-dollar text-lg w-6 group-hover:scale-110 transition-transform"></i> Business &amp; Treasury</button>
+<button class="nav-btn admin-only w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left font-semibold tracking-wide text-zinc-400 hover:bg-zinc-900 hover:text-orange-500 hover:translate-x-1 transition-all group" id="btn-logistik" onclick="switchTab('logistik')"><i class="fa-solid fa-people-carry-box text-lg w-6 group-hover:-translate-y-1 transition-transform"></i> Asset Movement</button>
+<button class="nav-btn admin-only w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left font-semibold tracking-wide text-zinc-400 hover:bg-zinc-900 hover:text-orange-500 hover:translate-x-1 transition-all group" id="btn-tambah" onclick="switchTab('tambah')"><i class="fa-solid fa-plus-circle text-lg w-6 group-hover:rotate-90 transition-transform"></i> Asset Registry</button>
+<div class="nav-section-label admin-only">RECORDS</div><button class="nav-btn admin-only w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left font-semibold tracking-wide text-zinc-400 hover:bg-zinc-900 hover:text-orange-500 hover:translate-x-1 transition-all group" id="btn-logs" onclick="switchTab('logs')"><i class="fa-solid fa-file-invoice-dollar text-lg w-6 group-hover:-rotate-45 transition-transform"></i> Audit Ledger</button>
+<button class="nav-btn admin-only w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left font-semibold tracking-wide text-zinc-400 hover:bg-zinc-900 hover:text-orange-500 hover:translate-x-1 transition-all group" id="btn-rekap" onclick="switchTab('rekap')"><i class="fa-solid fa-file-excel text-lg w-6 group-hover:scale-110 transition-transform text-emerald-600/80 group-hover:text-emerald-500"></i> Monthly Archive</button>
+</nav>
+<div class="p-4 border-t border-zinc-900 bg-zinc-900/20 shrink-0">
+<button class="w-full flex items-center justify-center gap-2 px-4 py-2 rounded border border-red-900/40 bg-red-950/10 hover:bg-red-900 text-red-400 hover:text-white font-semibold text-xs transition-all group" onclick="handleLogout()"><i class="fa-solid fa-sign-out-alt group-hover:-translate-x-1 transition-transform"></i> End Session</button>
+</div>
+</aside>
+<div aria-hidden="true" class="sidebar-backdrop hidden" id="sidebar-backdrop" onclick="closeSidebar()"></div>
+<main class="flex-1 bg-zinc-900/40 relative overflow-y-auto p-4 md:p-8 w-full flex flex-col">
+<img alt="" aria-hidden="true" class="x-main-watermark" src="assets/img/xaviera-family-logo.png"/><div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-orange-950/10 via-zinc-900/50 to-zinc-950 -z-10 transition-colors duration-500"></div>
+<header class="app-header flex justify-between items-center gap-4 shrink-0">
+<div class="flex items-center gap-3">
+<button aria-expanded="true" aria-label="Tampilkan atau sembunyikan sidebar" class="sidebar-toggle-btn" id="sidebar-toggle-btn" onclick="toggleSidebar()" title="Tampilkan / sembunyikan sidebar" type="button"><i class="fa-solid fa-ellipsis-vertical" id="sidebar-toggle-icon"></i></button>
+<div><h2 class="text-xl md:text-2xl font-bold tracking-wide uppercase text-zinc-100" id="page-title">FAMILY COMMAND CENTER</h2><p class="text-xs text-zinc-400 hidden sm:block">Private operations and estate administration.</p></div>
+</div>
+<div class="flex items-center gap-2 md:gap-3">
+<button aria-label="Buka command menu" class="command-menu-btn" id="command-menu-btn" title="Command Menu (Ctrl+K)" type="button">
+<i class="fa-solid fa-bolt"></i>
+<span class="hidden md:inline">Command Menu</span>
+<kbd class="hidden lg:inline">Ctrl K</kbd>
+</button>
+<button aria-label="Royal display mode" class="header-icon-btn hidden sm:inline-flex" onclick="toggleHackerMode()" title="Royal display mode"><i class="fa-solid fa-crown"></i></button>
+<div class="text-right shrink-0 border-l border-zinc-700 pl-3 md:pl-4"><div class="text-base md:text-lg font-bold text-orange-500 tracking-wider font-mono glow-text" id="live-clock">00:00:00</div><span class="text-[9px] md:text-[11px] text-zinc-500 uppercase tracking-widest font-semibold">XAVIERA ESTATE · PRIVATE</span></div>
+</div>
+</header>
+<div class="live-strip text-zinc-400 text-xs flex items-center overflow-hidden w-full shrink-0">
+<i class="fa-solid fa-satellite-dish text-orange-500 mr-3 animate-pulse"></i><span class="font-bold text-orange-500 mr-2 shrink-0">HOUSE FEED:</span><marquee class="w-full text-zinc-300 font-mono tracking-wide" id="live-ticker" scrollamount="4">Menghubungkan jaringan internal...</marquee>
+</div>
+<section class="tab-content hidden animate-[fadeIn_0.3s_ease-in-out] flex-1 flex-col pb-4 h-full secondary-page map-page" id="tab-map">
+<div class="secondary-page-hero">
+<div>
+<div class="eyebrow"><span class="status-dot"></span> Territory intelligence</div>
+<h3>Territory &amp; asset intelligence</h3>
+<p>Pantau titik aset utama keluarga dan status persediaan berdasarkan lokasi dalam satu tampilan.</p>
+</div>
+<div class="secondary-hero-actions">
+<span class="secondary-status-chip"><i class="fa-solid fa-location-crosshairs"></i> 3 estate points</span>
+<button class="secondary-action-btn" onclick="updateMapPopups()"><i class="fa-solid fa-satellite-dish"></i><span>Sync territory</span></button>
+</div>
+</div>
+<div class="map-shell">
+<div class="map-toolbar">
+<div class="map-toolbar-title">
+<span class="section-icon"><i class="fa-solid fa-map-location-dot"></i></span>
+<div><span class="panel-kicker">Estate territory</span><h3>Xaviera territory network</h3></div>
+</div>
+<div class="map-legend">
+<span><i class="fa-solid fa-circle map-dot map-dot-orange"></i>Storehouse</span>
+<span><i class="fa-solid fa-circle map-dot map-dot-red"></i>Vault</span>
+</div>
+</div>
+<div class="w-full flex-1 z-0 bg-zinc-900 map-canvas" id="faction-map"></div>
+<div class="map-footnote"><i class="fa-solid fa-circle-info"></i> Klik marker untuk melihat ringkasan item dan total unit pada lokasi tersebut.</div>
+</div>
+</section>
+<section class="tab-content hidden animate-[fadeIn_0.3s_ease-in-out] secondary-page sop-page" id="tab-rules">
+<div class="secondary-page-hero">
+<div>
+<div class="eyebrow"><span class="status-dot"></span> House governance</div>
+<h3>Codex &amp; protokol keluarga</h3>
+<p>Pusat protokol internal, hierarki, dan tata kelola aset yang berlaku bagi seluruh anggota keluarga.</p>
+</div>
+<div class="secondary-hero-actions"><span class="secondary-status-chip" id="rules-count"><i class="fa-solid fa-book-open"></i> 0 Pasal</span></div>
+</div>
+<div class="sop-layout">
+<aside class="secondary-panel form-panel admin-only h-fit">
+<div class="secondary-panel-head">
+<div class="panel-title-group"><span class="section-icon"><i class="fa-solid fa-pen-nib"></i></span><div><span class="panel-kicker">Editor</span><h3>Terbitkan aturan baru</h3></div></div>
+<span class="panel-mini-badge">Staff only</span>
+</div>
+<form class="secondary-form" id="form-tambah-rule" onsubmit="handleAddRule(event)">
+<div class="field-group"><label for="rule-category">Kategori protokol</label><select id="rule-category" required=""><option value="Aturan Umum">📜 House Rules</option><option value="SOP Gudang">📦 Asset &amp; Inventory Protocol</option><option value="Hierarki">👑 House Hierarchy</option></select></div>
+<div class="field-group"><label for="rule-title">Judul protokol</label><input id="rule-title" placeholder="Contoh: Batas Akses Persediaan" required="" type="text"/></div>
+<div class="field-group"><label for="rule-content">Isi protokol / deskripsi</label><textarea id="rule-content" placeholder="Tulis rincian protokol internal di sini..." required="" rows="7"></textarea><small>Gunakan instruksi yang ringkas, tegas, dan mudah dipahami.</small></div>
+<button class="primary-page-action" type="submit"><i class="fa-solid fa-box-archive"></i><span>Archive Protocol</span></button>
+</form>
+</aside>
+<article class="secondary-panel sop-vault-panel">
+<div class="secondary-panel-head">
+<div class="panel-title-group"><span class="section-icon"><i class="fa-solid fa-scroll"></i></span><div><span class="panel-kicker">Family codex</span><h3>Codex &amp; arsip protokol</h3></div></div>
+<span class="panel-mini-badge muted"><i class="fa-solid fa-shield-halved"></i> Internal</span>
+</div>
+<div class="sop-list sidebar-scroll" id="rules-container"><div class="secondary-empty"><i class="fa-regular fa-folder-open"></i><span>Memuat arsip protokol keluarga...</span></div></div>
+</article>
+</div>
+</section>
+<section class="tab-content block dashboard-view animate-[fadeIn_0.4s_ease-in-out] pb-4" id="tab-dashboard">
+<div class="dashboard-hero">
+<div>
+<div class="eyebrow"><span class="status-dot"></span>House overview</div>
+<h3>Xaviera Command Chamber</h3>
+<p>Akses ringkasan aset, treasury, persediaan, dan aktivitas internal dari satu pusat kendali.</p>
+</div>
+<div class="hero-actions">
+<span class="connection-pill" id="db-status"><i class="fa-solid fa-circle-check"></i> Network Online</span>
+<span class="sync-pill" title="Waktu sinkronisasi data terakhir"><i class="fa-regular fa-clock"></i><span id="last-sync-time">Belum sinkron</span></span>
+<button class="soft-action" id="refresh-dashboard-btn" onclick="fetchInventory()"><i class="fa-solid fa-rotate"></i><span>Sync Data</span></button>
+</div>
+<img alt="" aria-hidden="true" class="dashboard-crest-watermark" src="assets/img/xaviera-family-logo.png"/></div>
+<div class="kpi-grid">
+<article class="kpi-card kpi-green">
+<div class="kpi-top"><span>Treasury</span><i class="fa-solid fa-arrow-trend-up"></i></div>
+<h3 id="stat-kas-bersih">...</h3>
+<p>Dana operasional keluarga</p>
+</article>
+<article class="kpi-card kpi-red">
+<div class="kpi-top"><span>Uncleared Funds</span><i class="fa-solid fa-wallet"></i></div>
+<h3 id="stat-kas-kotor">...</h3>
+<p>Dana belum dikonsolidasikan</p>
+</article>
+<article class="kpi-card kpi-orange">
+<div class="kpi-top"><span>Asset Types</span><i class="fa-solid fa-boxes-stacked"></i></div>
+<h3 id="stat-jenis-barang">0</h3>
+<p>Jenis aset tercatat</p>
+</article>
+<article class="kpi-card kpi-rose">
+<div class="kpi-top"><span>Critical Assets</span><i class="fa-solid fa-triangle-exclamation"></i></div>
+<h3 id="stat-barang-kritis">0 Item</h3>
+<p>Persediaan perlu perhatian</p>
+</article>
+</div>
+<div class="dashboard-grid">
+<article class="dashboard-panel analytics-panel">
+<div class="panel-heading">
+<div><span class="panel-kicker">Asset intelligence</span><h3>Current asset distribution</h3></div>
+<i class="fa-solid fa-chart-simple panel-icon"></i>
+</div>
+<div class="chart-stage"><canvas id="bloodlineChart"></canvas></div>
+</article>
+<aside class="dashboard-panel treasury-panel">
+<div class="panel-heading">
+<div><span class="panel-kicker">House treasury</span><h3>Treasury overview</h3></div>
+<i class="fa-solid fa-vault panel-icon"></i>
+</div>
+<div class="treasury-list">
+<div class="treasury-row">
+<div class="treasury-balance-info">
+<span class="treasury-label">Available treasury</span>
+<strong id="display-faction-funds">Memuat...</strong>
+</div>
+<div aria-label="Aksi kas tersedia" class="admin-only treasury-actions" data-staff-control="treasury">
+<button aria-label="Withdraw house treasury" class="treasury-action treasury-action-minus" onclick="changeTreasuryBalance('clean', 'withdraw')" title="Withdraw house treasury" type="button">
+<i class="fa-solid fa-minus"></i>
+</button>
+<button aria-label="Deposit house treasury" class="treasury-action treasury-action-plus" onclick="changeTreasuryBalance('clean', 'deposit')" title="Deposit house treasury" type="button">
+<i class="fa-solid fa-plus"></i>
+</button>
+</div>
+</div>
+<div class="treasury-row">
+<div class="treasury-balance-info">
+<span class="treasury-label">Unprocessed funds</span>
+<strong class="danger-value" id="display-dirty-funds">Memuat...</strong>
+</div>
+<div aria-label="Aksi uang kotor" class="admin-only treasury-actions" data-staff-control="treasury">
+<button aria-label="Withdraw unprocessed funds" class="treasury-action treasury-action-minus" onclick="changeTreasuryBalance('dirty', 'withdraw')" title="Withdraw unprocessed funds" type="button">
+<i class="fa-solid fa-minus"></i>
+</button>
+<button aria-label="Deposit unprocessed funds" class="treasury-action treasury-action-plus" onclick="changeTreasuryBalance('dirty', 'deposit')" title="Deposit unprocessed funds" type="button">
+<i class="fa-solid fa-plus"></i>
+</button>
+</div>
+</div>
+<div class="treasury-row">
+<div><span class="treasury-label">Critical threshold</span><strong>≤ <span id="critical-limit-display">500</span> unit</strong></div>
+<button class="admin-only icon-action" data-staff-control="treasury" onclick="adjustCriticalLimit()" title="Atur batas kritis"><i class="fa-solid fa-pen"></i></button>
+</div>
+</div>
+<div class="treasury-note"><i class="fa-solid fa-shield-halved"></i><span>Perubahan treasury dan batas kritis hanya tersedia bagi otoritas keluarga.</span></div>
+</aside>
+</div>
+<article class="dashboard-panel inventory-panel">
+<div class="inventory-toolbar">
+<div>
+<span class="panel-kicker">Estate manifest</span>
+<h3>Asset inventory</h3>
+<p>Telusuri aset dan pantau ketersediaannya berdasarkan lokasi penyimpanan.</p>
+</div>
+<div class="inventory-controls">
+<div class="inventory-filters">
+<label class="search-field"><i class="fa-solid fa-magnifying-glass"></i><input id="search-inventory" onkeyup="renderTable()" placeholder="Cari barang..." type="text"/></label>
+<select id="filter-lokasi" onchange="fetchInventory()"><option value="Semua">Semua lokasi</option><option value="Brankas Bos">Private Vault</option><option value="Loker Bersama">Shared Depository</option><option value="Gudang Umum">Central Storehouse</option></select>
+</div>
+<div aria-label="Legenda status stok" class="inventory-status-legend">
+<span class="legend-item legend-safe"><i></i>Aman</span>
+<span class="legend-item legend-watch"><i></i>Menipis</span>
+<span class="legend-item legend-critical"><i></i>Kritis</span>
+</div>
+</div>
+</div>
+<div class="inventory-section">
+<div class="inventory-section-title"><span class="section-mark armory-mark"><i class="fa-solid fa-gun"></i></span><div><h4>Armory Vault</h4><p>Persenjataan dan perlengkapan khusus</p></div></div>
+<div class="inventory-table-wrap" id="inventory-senjata-container"><div class="empty-state">Memuat senjata...</div></div>
+</div>
+<div class="inventory-section resource-section">
+<div class="inventory-section-title"><span class="section-mark resource-mark"><i class="fa-solid fa-box-open"></i></span><div><h4>Estate Resources</h4><p>Aset umum dan material operasional</p></div></div>
+<div class="inventory-table-wrap" id="inventory-resource-container"><div class="empty-state">Memuat resource...</div></div>
+</div>
+</article>
+</section>
+<section class="tab-content hidden animate-[fadeIn_0.3s_ease-in-out] secondary-page roster-page" id="tab-roster">
+<div class="secondary-page-hero">
+<div>
+<div class="eyebrow"><span class="status-dot"></span> Family registry</div>
+<h3>Registry anggota Xaviera</h3>
+<p>Kelola identitas, posisi, dan status operasional anggota keluarga dalam satu registry.</p>
+</div>
+<div class="secondary-hero-actions"><span class="secondary-status-chip" id="roster-count"><i class="fa-solid fa-users"></i> 0 Anggota</span></div>
+</div>
+<div class="roster-layout">
+<aside class="secondary-panel form-panel admin-only h-fit">
+<div class="secondary-panel-head">
+<div class="panel-title-group"><span class="section-icon"><i class="fa-solid fa-user-plus"></i></span><div><span class="panel-kicker">Family registry</span><h3>Register member</h3></div></div>
+<span class="panel-mini-badge">Staff only</span>
+</div>
+<form class="secondary-form" id="form-tambah-anggota" onsubmit="handleAddMember(event)">
+<div class="field-group"><label for="roster-name">Nama / alias</label><input id="roster-name" placeholder="Nama in-game" required="" type="text"/></div>
+<div class="field-group"><label for="roster-rank">Posisi / rank</label><select id="roster-rank" required=""><option value="President">Head of House</option><option value="Vice President">Deputy Head</option><option value="Sgt at Arms">Head of Security</option><option value="Treasury">Treasury Keeper</option><option value="Road Captain">Field Coordinator</option><option value="Enforcer">Security Officer</option><option value="Member">Family Member</option><option value="Prospect">Associate</option><option value="Hangaround">Affiliate</option></select></div>
+<div class="field-group"><label for="roster-status">Operational status</label><select id="roster-status" required=""><option value="Aktif">🟢 Active</option><option value="Inaktif">⚪ Inactive / Unavailable</option><option value="Penjara">🔴 Restricted / Critical</option></select></div>
+<button class="primary-page-action" type="submit"><i class="fa-solid fa-user-check"></i><span>Register Member</span></button>
+</form>
+</aside>
+<article class="secondary-panel roster-directory-panel">
+<div class="secondary-panel-head">
+<div class="panel-title-group"><span class="section-icon"><i class="fa-solid fa-users-viewfinder"></i></span><div><span class="panel-kicker">Directory</span><h3>Family registry database</h3></div></div>
+<span class="panel-mini-badge muted"><i class="fa-solid fa-database"></i> Live data</span>
+</div>
+<div class="modern-table-wrap sidebar-scroll">
+<table class="modern-table roster-table">
+<thead><tr><th>Nama anggota</th><th>Posisi / rank</th><th class="text-center">Status</th><th class="text-center admin-only">Tindakan</th></tr></thead>
+<tbody id="roster-table-body"><tr><td class="secondary-empty-cell" colspan="4">Memuat roster...</td></tr></tbody>
+</table>
+</div>
+</article>
+</div>
+</section>
+<section class="tab-content hidden animate-[fadeIn_0.3s_ease-in-out] secondary-page transaction-page" id="tab-bisnis">
+<div class="secondary-page-hero">
+<div>
+<div class="eyebrow"><span class="status-dot"></span> Estate commerce</div>
+<h3>Business &amp; treasury operations</h3>
+<p>Kelola penjualan, akuisisi, dan paket aset dengan verifikasi nilai sebelum transaksi dikonfirmasi.</p>
+</div>
+<div class="secondary-hero-actions"><span class="secondary-status-chip"><i class="fa-solid fa-shield-halved"></i> Authorized access</span></div>
+</div>
+<div class="transaction-grid">
+<article class="secondary-panel transaction-card transaction-single">
+<div class="secondary-panel-head">
+<div class="panel-title-group"><span class="section-icon green"><i class="fa-solid fa-box"></i></span><div><span class="panel-kicker">Direct asset</span><h3>Direct transaction</h3></div></div>
+<span class="panel-mini-badge green">Direct trade</span>
+</div>
+<form class="secondary-form transaction-form" id="form-bisnis-satuan" onsubmit="handleBusinessSatuan(event)">
+<div class="field-group"><label for="satuan-tipe">Jenis transaksi</label><select id="satuan-tipe" onchange="toggleSatuanColors()" required=""><option value="Jual">💸 SALE / OUTGOING</option><option value="Beli">📥 ACQUISITION / RESTOCK</option></select></div>
+<div class="field-group"><label for="satuan-item">Pilih barang</label><select id="satuan-item" required=""></select></div>
+<div class="form-two-cols"><div class="field-group"><label for="satuan-qty">Jumlah / Qty</label><input id="satuan-qty" min="1" oninput="calcSatuanTotal()" required="" type="number"/></div><div class="field-group"><label for="satuan-harga">Harga per unit ($)</label><input id="satuan-harga" min="0" oninput="calcSatuanTotal()" required="" type="number"/></div></div>
+<div class="field-group"><label for="satuan-target">Klien / pemasok</label><input id="satuan-target" placeholder="Nama pihak transaksi" required="" type="text"/></div>
+<div class="transaction-total" id="satuan-total-box"><div><span>Total nilai</span><small>Nilai transaksi yang akan dicatat</small></div><strong id="display-satuan-total">$ 0</strong></div>
+<button class="primary-page-action transaction-confirm green-action" type="submit"><i class="fa-solid fa-check"></i><span>Konfirmasi transaksi</span></button>
+</form>
+</article>
+<article class="secondary-panel transaction-card transaction-bundle">
+<div class="secondary-panel-head">
+<div class="panel-title-group"><span class="section-icon"><i class="fa-solid fa-boxes-packing"></i></span><div><span class="panel-kicker">Estate bundle</span><h3>Bundle transaction</h3></div></div>
+<span class="panel-mini-badge">Bundle trade</span>
+</div>
+<form class="secondary-form transaction-form" id="form-bisnis-paket" onsubmit="handleBusinessPaket(event)">
+<div class="field-group"><label for="paket-tipe">Jenis transaksi</label><select id="paket-tipe" onchange="togglePaketColors()" required=""><option value="Jual">💸 SALE / OUTGOING</option><option value="Beli">📥 ACQUISITION / RESTOCK</option></select></div>
+<div class="field-group"><label for="paket-bundle">Pilih paket</label><select id="paket-bundle" onchange="calcPaketTotal()" required=""></select></div>
+<div class="form-two-cols"><div class="field-group"><label for="paket-qty">Jumlah paket</label><input id="paket-qty" min="1" oninput="calcPaketTotal()" required="" type="number"/></div><div class="field-group"><label for="paket-target">Klien / pemasok</label><input id="paket-target" placeholder="Nama pihak transaksi" required="" type="text"/></div></div>
+<div class="transaction-total orange" id="paket-total-box"><div><span>Total nilai</span><small>Nilai paket yang akan dicatat</small></div><strong id="display-paket-total">$ 0</strong></div>
+<button class="primary-page-action transaction-confirm" type="submit"><i class="fa-solid fa-check"></i><span>Konfirmasi transaksi</span></button>
+</form>
+</article>
+</div>
+<div class="bundle-management-grid">
+<aside class="secondary-panel bundle-builder h-fit">
+<div class="secondary-panel-head">
+<div class="panel-title-group"><span class="section-icon neutral"><i class="fa-solid fa-sliders"></i></span><div><span class="panel-kicker">Package architect</span><h3>Create asset package</h3></div></div>
+</div>
+<form class="secondary-form compact-form" id="form-buat-paket" onsubmit="handleCreateBundle(event)">
+<div class="form-two-cols bundle-meta"><div class="field-group"><label for="create-bundle-name">Nama paket</label><input id="create-bundle-name" placeholder="Contoh: Starter Pack" required="" type="text"/></div><div class="field-group"><label for="create-bundle-price">Harga paket ($)</label><input id="create-bundle-price" min="0" placeholder="0" required="" type="number"/></div></div>
+<div class="bundle-items-box"><div class="bundle-items-title"><span>Isi barang</span><small>Maksimal 3 item</small></div><div class="bundle-item-row"><select id="bundle-item1" required=""></select><input id="bundle-qty1" min="1" placeholder="Qty" required="" type="number"/></div><div class="bundle-item-row"><select id="bundle-item2"></select><input id="bundle-qty2" min="1" placeholder="Qty" type="number"/></div><div class="bundle-item-row"><select id="bundle-item3"></select><input id="bundle-qty3" min="1" placeholder="Qty" type="number"/></div></div>
+<button class="secondary-page-action" type="submit"><i class="fa-solid fa-floppy-disk"></i><span>Simpan konfigurasi</span></button>
+</form>
+</aside>
+<article class="secondary-panel bundle-database-panel">
+<div class="secondary-panel-head"><div class="panel-title-group"><span class="section-icon neutral"><i class="fa-solid fa-boxes-stacked"></i></span><div><span class="panel-kicker">Package registry</span><h3>Available asset packages</h3></div></div><span class="panel-mini-badge muted"><i class="fa-solid fa-database"></i> Live</span></div>
+<div class="modern-table-wrap sidebar-scroll"><table class="modern-table bundle-table"><thead><tr><th>Nama paket</th><th>Rincian isi</th><th class="text-right">Harga set</th><th class="text-center">Hapus</th></tr></thead><tbody id="bundles-table-body"><tr><td class="secondary-empty-cell" colspan="4">Memuat data paket...</td></tr></tbody></table></div>
+</article>
+</div>
+</section>
+<section class="tab-content hidden animate-[fadeIn_0.3s_ease-in-out] secondary-page workflow-page" id="tab-logistik"><div class="secondary-page-hero"><div><div class="eyebrow"><span class="status-dot"></span> Asset control</div><h3>Internal asset movement</h3><p>Catat pengeluaran atau penyimpanan aset tanpa memengaruhi saldo treasury.</p></div><div class="secondary-hero-actions"><span class="secondary-status-chip"><i class="fa-solid fa-arrow-right-arrow-left"></i> Inventory operation</span></div></div>
+<div class="secondary-panel workflow-panel">
+<div class="secondary-panel-head workflow-panel-head"><div class="panel-title-group"><span class="section-icon"><i class="fa-solid fa-boxes-stacked"></i></span><div><span class="panel-kicker">Inventory operation</span><h3>Record asset movement</h3></div></div><span class="panel-mini-badge muted">No treasury impact</span></div>
+<form class="secondary-form workflow-form" id="form-mutasi-gudang" onsubmit="handleMutasiGudang(event)">
+<div class="field-group"><label class="block text-xs uppercase text-zinc-400 mb-2 font-semibold">Jenis Pergerakan Aset</label><select class="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-sm text-zinc-200" id="mutasi-tipe" onchange="toggleMutasiColors()" required=""><option value="Ambil">📤 WITHDRAW ASSET</option><option value="Simpan">📥 DEPOSIT ASSET</option></select></div>
+<div class="field-group"><label class="block text-xs uppercase text-zinc-400 mb-2 font-semibold">Pilih Aset</label><select class="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-sm text-zinc-200" id="mutasi-item" required=""></select></div>
+<div class="field-group"><label class="block text-xs uppercase text-zinc-400 mb-2 font-semibold">Jumlah (Qty)</label><input class="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-sm text-zinc-200" id="mutasi-qty" min="1" required="" type="number"/></div>
+<div class="field-group"><label class="block text-xs uppercase text-zinc-400 mb-2 font-semibold">Catatan / Tujuan Pergerakan</label><input class="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-sm text-zinc-200" id="mutasi-keterangan" required="" type="text"/></div>
+<button class="primary-page-action workflow-submit" id="mutasi-btn" type="submit"><i class="fa-solid fa-boxes-stacked"></i> Record Movement</button>
+</form>
+</div>
+</section>
+<section class="tab-content hidden animate-[fadeIn_0.3s_ease-in-out] secondary-page workflow-page" id="tab-tambah"><div class="secondary-page-hero"><div><div class="eyebrow"><span class="status-dot"></span> Asset registry</div><h3>Register a new estate asset</h3><p>Tambahkan jenis aset baru, kategori, lokasi penyimpanan, dan stok awal ke inventory estate.</p></div><div class="secondary-hero-actions"><span class="secondary-status-chip"><i class="fa-solid fa-plus"></i> Registry access</span></div></div>
+<div class="secondary-panel workflow-panel">
+<div class="secondary-panel-head workflow-panel-head"><div class="panel-title-group"><span class="section-icon"><i class="fa-solid fa-box-open"></i></span><div><span class="panel-kicker">New record</span><h3>Asset registration form</h3></div></div><span class="panel-mini-badge">Authorized staff</span></div>
+<form class="secondary-form workflow-form" id="form-tambah-barang" onsubmit="handleAddNewItem(event)">
+<div class="field-group"><label class="block text-xs uppercase text-zinc-400 mb-2 font-semibold">Nama Aset / Code Name</label><input class="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-sm text-zinc-200" id="input-tambah-nama" required="" type="text"/></div>
+<div class="field-group"><label class="block text-xs uppercase text-zinc-400 mb-2 font-semibold">Kategori Aset</label><select class="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-sm text-zinc-200" id="input-tambah-kategori" required=""><option value="Resource">📦 General Asset / Material</option><option value="Senjata">🛡️ Armory / Security</option></select></div>
+<div class="field-group"><label class="block text-xs uppercase text-zinc-400 mb-2 font-semibold">Lokasi Penyimpanan</label><select class="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-sm text-zinc-200" id="input-tambah-lokasi" required=""><option value="Brankas Bos">Private Vault</option><option value="Loker Bersama">Shared Depository</option><option value="Gudang Umum">Central Storehouse</option></select></div>
+<div class="field-group"><label class="block text-xs uppercase text-zinc-400 mb-2 font-semibold">Stok Awal / Initial Stock</label><input class="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-sm text-zinc-200" id="input-tambah-stok" min="0" required="" type="number"/></div>
+<button class="primary-page-action workflow-submit" type="submit"><i class="fa-solid fa-save"></i> Register to Estate</button>
+</form>
+</div>
+</section>
+<section class="tab-content hidden animate-[fadeIn_0.3s_ease-in-out] secondary-page ledger-page" id="tab-logs">
+<div class="secondary-page-hero">
+<div>
+<div class="eyebrow"><span class="status-dot"></span> House audit</div>
+<h3>Activity &amp; treasury ledger</h3>
+<p>Telusuri seluruh pergerakan aset, transaksi, dan treasury dalam satu pusat audit keluarga.</p>
+</div>
+<div class="secondary-hero-actions"><span class="secondary-status-chip"><i class="fa-solid fa-clock-rotate-left"></i> Live audit</span></div>
+</div>
+<article class="secondary-panel ledger-panel ledger-main-panel">
+<div class="ledger-toolbar">
+<div class="panel-title-group"><span class="section-icon"><i class="fa-solid fa-list-ul"></i></span><div><span class="panel-kicker">Operational history</span><h3>Business &amp; asset activity</h3></div></div>
+<div class="ledger-controls">
+<button class="icon-page-action" onclick="toggleTimelineView()" title="Ubah tampilan"><i class="fa-solid fa-stream" id="timeline-toggle-icon"></i></button>
+<label class="ledger-search"><i class="fa-solid fa-magnifying-glass"></i><input id="search-logs" onkeyup="renderLogsTable()" placeholder="Cari item, operator, target..." type="text"/></label>
+<button class="secondary-page-action compact" onclick="fetchLogs()"><i class="fa-solid fa-rotate"></i><span>Refresh</span></button>
+</div>
+</div>
+<div class="ledger-content sidebar-scroll" id="logs-container"><div class="secondary-empty"><i class="fa-solid fa-spinner"></i><span>Memuat ledger...</span></div></div>
+</article>
+<article class="secondary-panel ledger-panel vault-ledger-panel">
+<div class="ledger-toolbar">
+<div class="panel-title-group"><span class="section-icon green"><i class="fa-solid fa-vault"></i></span><div><span class="panel-kicker">Treasury history</span><h3>Treasury movement history</h3></div></div>
+<button class="secondary-page-action compact green-outline" onclick="fetchFundLogs()"><i class="fa-solid fa-rotate"></i><span>Refresh</span></button>
+</div>
+<div class="modern-table-wrap vault-table-wrap sidebar-scroll"><table class="modern-table vault-ledger-table"><thead><tr><th class="text-center">Waktu (WIB)</th><th class="text-center">Movement type</th><th class="text-right">Amount</th><th>Operator</th></tr></thead><tbody id="fund-logs-table-body"><tr><td class="secondary-empty-cell" colspan="4">Loading treasury records...</td></tr></tbody></table></div>
+</article>
+</section>
+<section class="tab-content hidden animate-[fadeIn_0.3s_ease-in-out] secondary-page workflow-page archive-page" id="tab-rekap"><div class="secondary-page-hero"><div><div class="eyebrow"><span class="status-dot"></span> Records office</div><h3>Monthly estate archive</h3><p>Ekspor histori pergerakan aset dan transaksi untuk periode bulanan dalam format Excel.</p></div><div class="secondary-hero-actions"><span class="secondary-status-chip"><i class="fa-solid fa-file-excel"></i> Excel export</span></div></div>
+<div class="secondary-panel workflow-panel archive-panel">
+<div class="secondary-panel-head workflow-panel-head"><div class="panel-title-group"><span class="section-icon"><i class="fa-solid fa-file-shield"></i></span><div><span class="panel-kicker">Archive export</span><h3>Select reporting period</h3></div></div></div>
+<div class="archive-content">
+<div class="archive-notice"><i class="fa-solid fa-circle-info"></i>Sistem akan mengekspor seluruh catatan pergerakan aset dan treasury ke file `.xlsx`.</div>
+<div class="archive-period-grid"><div class="field-group"><label class="block text-xs uppercase text-zinc-400 mb-2 font-semibold">Bulan</label><select class="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-sm text-zinc-200" id="rekap-bulan"></select></div><div class="field-group"><label class="block text-xs uppercase text-zinc-400 mb-2 font-semibold">Tahun</label><select class="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-sm text-zinc-200" id="rekap-tahun"><option value="2026">2026</option><option value="2027">2027</option></select></div></div>
+<button class="primary-page-action archive-download" onclick="exportMonthlyRecapExcel()"><i class="fa-solid fa-download"></i> Download Estate Archive (.xlsx)</button>
+</div>
+</div>
+</section>
+</main>
+<div aria-hidden="true" class="command-palette hidden" id="command-palette">
+<div class="command-palette-backdrop" data-command-close=""></div>
+<section aria-labelledby="command-title" aria-modal="true" class="command-dialog" role="dialog">
+<div class="command-search-wrap">
+<i class="fa-solid fa-magnifying-glass"></i>
+<input aria-label="Cari quick menu" autocomplete="off" id="command-search" placeholder="Cari halaman atau aksi..." type="text"/>
+<kbd>ESC</kbd>
+</div>
+<div class="command-dialog-head">
+<div>
+<span class="panel-kicker">Estate navigation</span>
+<h3 id="command-title">Command Menu</h3>
+</div>
+<span class="command-hint">Enter untuk membuka</span>
+</div>
+<div class="command-list" id="command-list">
+<button class="command-item" data-label="dashboard stock overview gudang" data-tab="dashboard" type="button">
+<span class="command-item-icon"><i class="fa-solid fa-gauge-high"></i></span><span><strong>Command Chamber</strong><small>Overview of assets and treasury</small></span><i class="fa-solid fa-arrow-right"></i>
+</button>
+<button class="command-item" data-label="peta operasional radar lokasi" data-tab="map" type="button">
+<span class="command-item-icon"><i class="fa-solid fa-map-location-dot"></i></span><span><strong>Territory Intelligence</strong><small>Estate points and storage locations</small></span><i class="fa-solid fa-arrow-right"></i>
+</button>
+<button class="command-item" data-label="roster anggota member" data-tab="roster" type="button">
+<span class="command-item-icon"><i class="fa-solid fa-users"></i></span><span><strong>House Directory</strong><small>Xaviera Family member registry</small></span><i class="fa-solid fa-arrow-right"></i>
+</button>
+<button class="command-item" data-label="sop panduan aturan" data-tab="rules" type="button">
+<span class="command-item-icon"><i class="fa-solid fa-scroll"></i></span><span><strong>House Codex</strong><small>Internal rules and house protocols</small></span><i class="fa-solid fa-arrow-right"></i>
+</button>
+<button class="command-item admin-only" data-label="transaksi bisnis kas jual beli" data-tab="bisnis" type="button">
+<span class="command-item-icon"><i class="fa-solid fa-hand-holding-dollar"></i></span><span><strong>Business &amp; Treasury</strong><small>Sales, acquisitions, and asset packages</small></span><i class="fa-solid fa-arrow-right"></i>
+</button>
+<button class="command-item admin-only" data-label="mutasi logistik stok simpan ambil" data-tab="logistik" type="button">
+<span class="command-item-icon"><i class="fa-solid fa-people-carry-box"></i></span><span><strong>Asset Movement</strong><small>Withdraw or deposit inventory assets</small></span><i class="fa-solid fa-arrow-right"></i>
+</button><button class="command-item admin-only" data-label="asset registry register tambah barang aset inventory" data-tab="tambah" type="button"><span class="command-item-icon"><i class="fa-solid fa-box-open"></i></span><span><strong>Asset Registry</strong><small>Register a new inventory asset</small></span><i class="fa-solid fa-arrow-right"></i></button>
+<button class="command-item admin-only" data-label="ledger audit logs riwayat" data-tab="logs" type="button">
+<span class="command-item-icon"><i class="fa-solid fa-clock-rotate-left"></i></span><span><strong>Audit Ledger</strong><small>Transaction, inventory, and treasury history</small></span><i class="fa-solid fa-arrow-right"></i>
+</button>
+<button class="command-item admin-only" data-label="rekap export excel laporan" data-tab="rekap" type="button">
+<span class="command-item-icon"><i class="fa-solid fa-file-excel"></i></span><span><strong>Monthly Archive</strong><small>Export monthly records to Excel</small></span><i class="fa-solid fa-arrow-right"></i>
+</button>
+</div>
+<div class="command-empty hidden" id="command-empty"><i class="fa-solid fa-magnifying-glass"></i><span>Tidak ada menu yang cocok.</span></div>
+</section>
+</div>
+</div>
+<script src="assets/js/app.js"></script>
+</body>
+</html>

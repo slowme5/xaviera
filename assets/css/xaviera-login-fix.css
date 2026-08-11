@@ -1,0 +1,183 @@
+/* =========================================================
+   XAVIERA FAMILY — LOGIN HOTFIX
+   Scope: #login-screen only.
+   No dashboard / sidebar / business logic changes.
+   ========================================================= */
+
+/* Reset legacy login-card rules from older theme layers. */
+html body #login-screen > .x-login-bg.x-login-bg {
+    display: block !important;
+    position: absolute !important;
+    inset: 0 !important;
+    z-index: -1 !important;
+    pointer-events: none !important;
+}
+
+html body #login-screen > .x-login-shell.x-login-shell {
+    position: relative !important;
+    width: min(1040px, 100%) !important;
+    max-width: 1040px !important;
+    min-height: min(650px, calc(100dvh - 64px)) !important;
+    padding: 0 !important;
+    margin: auto !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1.05fr) minmax(360px, .8fr) !important;
+    overflow: hidden !important;
+    border: 1px solid rgba(229, 201, 130, .20) !important;
+    border-radius: 18px !important;
+    background: rgba(10, 7, 5, .97) !important;
+    box-shadow: 0 42px 120px rgba(0,0,0,.67) !important;
+    transform: none !important;
+}
+
+/* Legacy theme adds corner decorations to the second child. Keep them,
+   but make sure they do not interfere with layout/content. */
+html body #login-screen > .x-login-shell.x-login-shell::before,
+html body #login-screen > .x-login-shell.x-login-shell::after {
+    pointer-events: none !important;
+    z-index: 20 !important;
+}
+
+html body #login-screen .x-login-brand.x-login-brand {
+    min-width: 0 !important;
+    min-height: 100% !important;
+    padding: 42px 42px 38px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    border-right: 1px solid rgba(229,201,130,.11) !important;
+}
+
+html body #login-screen .xaviera-login-logo.xaviera-login-logo {
+    display: block !important;
+    width: min(380px, 88%) !important;
+    max-width: 100% !important;
+    max-height: 285px !important;
+    height: auto !important;
+    margin: -10px auto 6px !important;
+    object-fit: contain !important;
+}
+
+html body #login-screen .x-login-access.x-login-access {
+    min-width: 0 !important;
+    padding: 42px 38px 34px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+}
+
+html body #login-screen form.x-login-form {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 15px !important;
+    margin: 0 !important;
+}
+
+/* Preserve Tailwind's hidden state for role-dependent fields. */
+html body #login-screen #alias-container.hidden,
+html body #login-screen #password-container.hidden {
+    display: none !important;
+}
+
+html body #login-screen #alias-container:not(.hidden),
+html body #login-screen #password-container:not(.hidden) {
+    display: block !important;
+}
+
+html body #login-screen input,
+html body #login-screen select {
+    width: 100% !important;
+    min-height: 49px !important;
+    box-sizing: border-box !important;
+}
+
+html body #login-screen button[type="submit"] {
+    width: 100% !important;
+    min-height: 49px !important;
+}
+
+/* Keep login usable on short laptop screens. */
+@media (max-height: 760px) and (min-width: 821px) {
+    html body #login-screen {
+        overflow-y: auto !important;
+        align-items: flex-start !important;
+    }
+    html body #login-screen > .x-login-shell.x-login-shell {
+        min-height: 600px !important;
+        margin: auto !important;
+    }
+    html body #login-screen .x-login-brand.x-login-brand {
+        padding-top: 28px !important;
+        padding-bottom: 28px !important;
+    }
+    html body #login-screen .xaviera-login-logo.xaviera-login-logo {
+        width: min(320px, 82%) !important;
+        max-height: 220px !important;
+    }
+    html body #login-screen .x-login-access.x-login-access {
+        padding-top: 30px !important;
+        padding-bottom: 28px !important;
+    }
+}
+
+/* Tablet / mobile: one-column login, no horizontal clipping. */
+@media (max-width: 820px) {
+    html body #login-screen {
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        align-items: flex-start !important;
+        padding: 14px !important;
+    }
+
+    html body #login-screen > .x-login-shell.x-login-shell {
+        width: min(560px, 100%) !important;
+        max-width: 560px !important;
+        min-height: 0 !important;
+        margin: auto !important;
+        grid-template-columns: minmax(0, 1fr) !important;
+        overflow: hidden !important;
+    }
+
+    html body #login-screen .x-login-brand.x-login-brand {
+        min-height: 280px !important;
+        padding: 26px 22px 22px !important;
+        border-right: 0 !important;
+        border-bottom: 1px solid rgba(229,201,130,.10) !important;
+    }
+
+    html body #login-screen .xaviera-login-logo.xaviera-login-logo {
+        width: min(270px, 76%) !important;
+        max-height: 190px !important;
+        margin: -8px auto 4px !important;
+    }
+
+    html body #login-screen .x-login-access.x-login-access {
+        padding: 30px 25px 26px !important;
+    }
+}
+
+@media (max-width: 520px) {
+    html body #login-screen {
+        padding: 9px !important;
+    }
+
+    html body #login-screen > .x-login-shell.x-login-shell {
+        border-radius: 13px !important;
+    }
+
+    html body #login-screen .x-login-brand.x-login-brand {
+        min-height: 220px !important;
+        padding: 18px 16px 14px !important;
+    }
+
+    html body #login-screen .xaviera-login-logo.xaviera-login-logo {
+        width: min(205px, 70%) !important;
+        max-height: 145px !important;
+    }
+
+    html body #login-screen .x-login-access.x-login-access {
+        padding: 23px 19px 21px !important;
+    }
+}
