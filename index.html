@@ -1,468 +1,878 @@
-<!DOCTYPE html>
+// ==========================================
+// ⚙️ KONFIGURASI SISTEM (SENSITIF)
+// ==========================================
+const SUPABASE_URL = 'https://bqkmifjbtlnfgbsfhhmu.supabase.co'; 
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxa21pZmpidGxuZmdic2ZoaG11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY0NTAzOTEsImV4cCI6MjEwMjAyNjM5MX0.0wK6CknzdFj8zx1GDU7BSDekRab5yPnC7r0alb9UK-E';
+const ADMIN_PASSWORD = 'xvfams'; 
+const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1536738430019440751/dS7j71Gb_cho3nav0rN3Y3N96g4mEiqt_1N0GoDatvVnZrB19JszzzswldDSnRFprXhN';
 
-<html lang="id">
-<head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>XAVIERA FAMILY — ESTATE OPERATIONS</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet"/>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<link href="assets/css/style.css" rel="stylesheet"/>
-<link href="assets/css/xaviera-theme.css" rel="stylesheet"/>
-<link href="assets/css/xaviera-v2.css" rel="stylesheet"/>
-<link href="assets/css/xaviera-login-fix.css" rel="stylesheet"/>
-<style>
-        .leaflet-popup-content-wrapper, .leaflet-popup-tip { background-color: #100d0b !important; border: 1px solid rgba(202,165,92,.22) !important; color: #f4ead8 !important; }
-        .leaflet-popup-close-button { color: #d2ad63 !important; }
-    </style>
-</head>
-<body class="text-zinc-100 overflow-hidden bg-zinc-950">
-<div class="fixed inset-0 z-50 flex items-center justify-center bg-[#070708] p-4 transition-colors duration-500" id="login-screen">
-<div class="x-login-bg"></div>
-<div class="x-login-shell">
-<div class="x-login-topline"></div>
-<div class="x-login-brand">
-<img alt="Xaviera Family Crest" class="xaviera-login-logo" src="assets/img/xaviera-family-logo.png"/>
-<div class="xaviera-login-kicker">PRIVATE ESTATE NETWORK</div>
-<h1 class="text-4xl text-orange-500 gang-title tracking-wider glow-text">XAVIERA FAMILY</h1>
-<p class="xaviera-login-subtitle">House Administration &amp; Asset Command</p><p class="x-login-brand-note">Private administration for assets, treasury, members, and internal records.</p>
-</div>
-<section class="x-login-access"><div class="x-login-access-head"><span>SECURE ACCESS</span><h2>Enter the Xaviera Estate</h2><p>Select your access level to continue into the private estate network.</p></div><form class="x-login-form" onsubmit="handleLogin(event)">
-<div class="group"><label class="block text-xs uppercase tracking-wider text-zinc-400 mb-2 font-semibold group-focus-within:text-orange-500">Pilih Otoritas Akses</label><select class="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-zinc-200 focus:outline-none focus:border-orange-500 cursor-pointer" id="login-role" onchange="toggleLoginInputs()"><option value="tamu"> GUEST / VISITOR </option><option value="president"> 👑 HEAD OF HOUSE </option><option value="vice_president"> ♜ DEPUTY HEAD </option><option value="treasury"> 💰 TREASURY KEEPER </option></select></div>
-<div class="hidden group" id="alias-container"><label class="block text-xs uppercase tracking-wider text-zinc-400 mb-2 font-semibold group-focus-within:text-orange-500">Nama / Alias Custodian</label><div class="relative"><span class="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500"><i class="fa-solid fa-user-tag"></i></span><input class="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 pl-10 text-zinc-200 focus:outline-none focus:border-orange-500" id="login-name" placeholder="Masukkan nama atau alias" type="text"/></div></div>
-<div class="hidden group" id="password-container"><label class="block text-xs uppercase tracking-wider text-zinc-400 mb-2 font-semibold group-focus-within:text-orange-500">Private Access Key</label><div class="relative"><span class="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500"><i class="fa-solid fa-lock"></i></span><input class="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 pl-10 text-zinc-200 focus:outline-none focus:border-orange-500" id="login-password" placeholder="Masukkan access key..." type="password"/></div></div>
-<button class="w-full bg-orange-600 hover:bg-orange-700 active:scale-95 text-white font-bold uppercase py-3 rounded-lg shadow-lg transition-all duration-200 text-sm flex items-center justify-center gap-2 group" type="submit">Enter The Estate <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i></button>
-</form><div class="x-login-security-note"><i class="fa-solid fa-shield-halved"></i><span>Restricted system · Authorized access only</span></div></section></div>
-</div>
-<div class="hidden h-screen relative flex" id="app-container">
-<aside class="sidebar-panel bg-zinc-950 border-r-2 border-orange-600 flex flex-col z-30 shadow-[5px_0_25px_rgba(0,0,0,0.8)] shrink-0" id="sidebar">
-<div class="shrink-0">
-<div class="p-5 border-b border-zinc-800 text-center bg-zinc-900/50 relative hover:bg-zinc-900 transition-colors group">
-<img alt="Xaviera Family" class="xaviera-sidebar-logo" src="assets/img/xaviera-family-logo.png"/>
-<h1 class="text-3xl text-orange-500 gang-title tracking-wider glow-text group-hover:scale-105 transition-transform duration-300">XAVIERA</h1>
-<p class="xaviera-sidebar-subtitle"><span></span> FAMILY ESTATE <span></span></p>
-<button aria-label="Tutup sidebar" class="sidebar-close-btn absolute top-4 right-4 md:hidden" onclick="closeSidebar()" title="Tutup sidebar" type="button"><i class="fa-solid fa-xmark"></i></button>
-</div>
-<div class="px-5 py-4 flex items-center gap-3 bg-gradient-to-r from-orange-950/20 to-transparent border-b border-zinc-900 hover:bg-zinc-900/60 cursor-pointer transition-colors group" onclick="showIDCard()">
-<div class="w-10 h-10 rounded-full bg-zinc-800 border border-orange-500 flex items-center justify-center text-orange-500 shadow-md group-hover:scale-110 group-hover:bg-orange-900/30" id="user-avatar-container"><i class="fa-solid fa-user-secret text-lg" id="user-icon"></i></div>
-<div class="flex-1"><h4 class="font-bold text-sm group-hover:text-orange-400 transition-colors" id="user-name">-</h4><span class="text-[10px] bg-orange-600/20 text-orange-400 px-2 py-0.5 rounded border border-orange-600/30 uppercase font-semibold" id="user-role-badge">-</span></div>
-<i class="fa-solid fa-id-card text-zinc-600 group-hover:text-orange-500 text-sm"></i>
-</div>
-</div>
-<nav class="sidebar-nav flex-1 overflow-y-auto sidebar-scroll">
-<div class="nav-section-label">OVERVIEW</div><button class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left font-semibold tracking-wide transition-all duration-200 bg-orange-600 text-white group" id="btn-dashboard" onclick="switchTab('dashboard')"><i class="fa-solid fa-gauge-high text-lg w-6 group-hover:rotate-12 transition-transform"></i> Command Chamber</button>
-<button class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left font-semibold tracking-wide text-zinc-400 hover:bg-zinc-900 hover:text-orange-500 hover:translate-x-1 transition-all group" id="btn-map" onclick="switchTab('map')"><i class="fa-solid fa-map-location-dot text-lg w-6 group-hover:scale-110 transition-transform"></i> Territory Intelligence</button>
-<div class="nav-section-label">HOUSE GOVERNANCE</div><button class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left font-semibold tracking-wide text-zinc-400 hover:bg-zinc-900 hover:text-orange-500 hover:translate-x-1 transition-all group" id="btn-roster" onclick="switchTab('roster')"><i class="fa-solid fa-users text-lg w-6 group-hover:scale-110 transition-transform"></i> House Directory</button>
-<button class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left font-semibold tracking-wide text-zinc-400 hover:bg-zinc-900 hover:text-orange-500 hover:translate-x-1 transition-all group" id="btn-rules" onclick="switchTab('rules')"><i class="fa-solid fa-scroll text-lg w-6 group-hover:scale-110 transition-transform"></i> House Codex</button>
-<div class="nav-section-label admin-only">OPERATIONS</div><button class="nav-btn admin-only w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left font-semibold tracking-wide text-zinc-400 hover:bg-zinc-900 hover:text-orange-500 hover:translate-x-1 transition-all group" id="btn-bisnis" onclick="switchTab('bisnis')"><i class="fa-solid fa-hand-holding-dollar text-lg w-6 group-hover:scale-110 transition-transform"></i> Business &amp; Treasury</button>
-<button class="nav-btn admin-only w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left font-semibold tracking-wide text-zinc-400 hover:bg-zinc-900 hover:text-orange-500 hover:translate-x-1 transition-all group" id="btn-logistik" onclick="switchTab('logistik')"><i class="fa-solid fa-people-carry-box text-lg w-6 group-hover:-translate-y-1 transition-transform"></i> Asset Movement</button>
-<button class="nav-btn admin-only w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left font-semibold tracking-wide text-zinc-400 hover:bg-zinc-900 hover:text-orange-500 hover:translate-x-1 transition-all group" id="btn-tambah" onclick="switchTab('tambah')"><i class="fa-solid fa-plus-circle text-lg w-6 group-hover:rotate-90 transition-transform"></i> Asset Registry</button>
-<div class="nav-section-label admin-only">RECORDS</div><button class="nav-btn admin-only w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left font-semibold tracking-wide text-zinc-400 hover:bg-zinc-900 hover:text-orange-500 hover:translate-x-1 transition-all group" id="btn-logs" onclick="switchTab('logs')"><i class="fa-solid fa-file-invoice-dollar text-lg w-6 group-hover:-rotate-45 transition-transform"></i> Audit Ledger</button>
-<button class="nav-btn admin-only w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left font-semibold tracking-wide text-zinc-400 hover:bg-zinc-900 hover:text-orange-500 hover:translate-x-1 transition-all group" id="btn-rekap" onclick="switchTab('rekap')"><i class="fa-solid fa-file-excel text-lg w-6 group-hover:scale-110 transition-transform text-emerald-600/80 group-hover:text-emerald-500"></i> Monthly Archive</button>
-</nav>
-<div class="p-4 border-t border-zinc-900 bg-zinc-900/20 shrink-0">
-<button class="w-full flex items-center justify-center gap-2 px-4 py-2 rounded border border-red-900/40 bg-red-950/10 hover:bg-red-900 text-red-400 hover:text-white font-semibold text-xs transition-all group" onclick="handleLogout()"><i class="fa-solid fa-sign-out-alt group-hover:-translate-x-1 transition-transform"></i> End Session</button>
-</div>
-</aside>
-<div aria-hidden="true" class="sidebar-backdrop hidden" id="sidebar-backdrop" onclick="closeSidebar()"></div>
-<main class="flex-1 bg-zinc-900/40 relative overflow-y-auto p-4 md:p-8 w-full flex flex-col">
-<img alt="" aria-hidden="true" class="x-main-watermark" src="assets/img/xaviera-family-logo.png"/><div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-orange-950/10 via-zinc-900/50 to-zinc-950 -z-10 transition-colors duration-500"></div>
-<header class="app-header flex justify-between items-center gap-4 shrink-0">
-<div class="flex items-center gap-3">
-<button aria-expanded="true" aria-label="Tampilkan atau sembunyikan sidebar" class="sidebar-toggle-btn" id="sidebar-toggle-btn" onclick="toggleSidebar()" title="Tampilkan / sembunyikan sidebar" type="button"><i class="fa-solid fa-ellipsis-vertical" id="sidebar-toggle-icon"></i></button>
-<div><h2 class="text-xl md:text-2xl font-bold tracking-wide uppercase text-zinc-100" id="page-title">FAMILY COMMAND CENTER</h2><p class="text-xs text-zinc-400 hidden sm:block">Private operations and estate administration.</p></div>
-</div>
-<div class="flex items-center gap-2 md:gap-3">
-<button aria-label="Buka command menu" class="command-menu-btn" id="command-menu-btn" title="Command Menu (Ctrl+K)" type="button">
-<i class="fa-solid fa-bolt"></i>
-<span class="hidden md:inline">Command Menu</span>
-<kbd class="hidden lg:inline">Ctrl K</kbd>
-</button>
-<button aria-label="Royal display mode" class="header-icon-btn hidden sm:inline-flex" onclick="toggleHackerMode()" title="Royal display mode"><i class="fa-solid fa-crown"></i></button>
-<div class="text-right shrink-0 border-l border-zinc-700 pl-3 md:pl-4"><div class="text-base md:text-lg font-bold text-orange-500 tracking-wider font-mono glow-text" id="live-clock">00:00:00</div><span class="text-[9px] md:text-[11px] text-zinc-500 uppercase tracking-widest font-semibold">XAVIERA ESTATE · PRIVATE</span></div>
-</div>
-</header>
-<div class="live-strip text-zinc-400 text-xs flex items-center overflow-hidden w-full shrink-0">
-<i class="fa-solid fa-satellite-dish text-orange-500 mr-3 animate-pulse"></i><span class="font-bold text-orange-500 mr-2 shrink-0">HOUSE FEED:</span><marquee class="w-full text-zinc-300 font-mono tracking-wide" id="live-ticker" scrollamount="4">Menghubungkan jaringan internal...</marquee>
-</div>
-<section class="tab-content hidden animate-[fadeIn_0.3s_ease-in-out] flex-1 flex-col pb-4 h-full secondary-page map-page" id="tab-map">
-<div class="secondary-page-hero">
-<div>
-<div class="eyebrow"><span class="status-dot"></span> Territory intelligence</div>
-<h3>Territory &amp; asset intelligence</h3>
-<p>Pantau titik aset utama keluarga dan status persediaan berdasarkan lokasi dalam satu tampilan.</p>
-</div>
-<div class="secondary-hero-actions">
-<span class="secondary-status-chip"><i class="fa-solid fa-location-crosshairs"></i> 3 estate points</span>
-<button class="secondary-action-btn" onclick="updateMapPopups()"><i class="fa-solid fa-satellite-dish"></i><span>Sync territory</span></button>
-</div>
-</div>
-<div class="map-shell">
-<div class="map-toolbar">
-<div class="map-toolbar-title">
-<span class="section-icon"><i class="fa-solid fa-map-location-dot"></i></span>
-<div><span class="panel-kicker">Estate territory</span><h3>Xaviera territory network</h3></div>
-</div>
-<div class="map-legend">
-<span><i class="fa-solid fa-circle map-dot map-dot-orange"></i>Storehouse</span>
-<span><i class="fa-solid fa-circle map-dot map-dot-red"></i>Vault</span>
-</div>
-</div>
-<div class="w-full flex-1 z-0 bg-zinc-900 map-canvas" id="faction-map"></div>
-<div class="map-footnote"><i class="fa-solid fa-circle-info"></i> Klik marker untuk melihat ringkasan item dan total unit pada lokasi tersebut.</div>
-</div>
-</section>
-<section class="tab-content hidden animate-[fadeIn_0.3s_ease-in-out] secondary-page sop-page" id="tab-rules">
-<div class="secondary-page-hero">
-<div>
-<div class="eyebrow"><span class="status-dot"></span> House governance</div>
-<h3>Codex &amp; protokol keluarga</h3>
-<p>Pusat protokol internal, hierarki, dan tata kelola aset yang berlaku bagi seluruh anggota keluarga.</p>
-</div>
-<div class="secondary-hero-actions"><span class="secondary-status-chip" id="rules-count"><i class="fa-solid fa-book-open"></i> 0 Pasal</span></div>
-</div>
-<div class="sop-layout">
-<aside class="secondary-panel form-panel admin-only h-fit">
-<div class="secondary-panel-head">
-<div class="panel-title-group"><span class="section-icon"><i class="fa-solid fa-pen-nib"></i></span><div><span class="panel-kicker">Editor</span><h3>Terbitkan aturan baru</h3></div></div>
-<span class="panel-mini-badge">Staff only</span>
-</div>
-<form class="secondary-form" id="form-tambah-rule" onsubmit="handleAddRule(event)">
-<div class="field-group"><label for="rule-category">Kategori protokol</label><select id="rule-category" required=""><option value="Aturan Umum">📜 House Rules</option><option value="SOP Gudang">📦 Asset &amp; Inventory Protocol</option><option value="Hierarki">👑 House Hierarchy</option></select></div>
-<div class="field-group"><label for="rule-title">Judul protokol</label><input id="rule-title" placeholder="Contoh: Batas Akses Persediaan" required="" type="text"/></div>
-<div class="field-group"><label for="rule-content">Isi protokol / deskripsi</label><textarea id="rule-content" placeholder="Tulis rincian protokol internal di sini..." required="" rows="7"></textarea><small>Gunakan instruksi yang ringkas, tegas, dan mudah dipahami.</small></div>
-<button class="primary-page-action" type="submit"><i class="fa-solid fa-box-archive"></i><span>Archive Protocol</span></button>
-</form>
-</aside>
-<article class="secondary-panel sop-vault-panel">
-<div class="secondary-panel-head">
-<div class="panel-title-group"><span class="section-icon"><i class="fa-solid fa-scroll"></i></span><div><span class="panel-kicker">Family codex</span><h3>Codex &amp; arsip protokol</h3></div></div>
-<span class="panel-mini-badge muted"><i class="fa-solid fa-shield-halved"></i> Internal</span>
-</div>
-<div class="sop-list sidebar-scroll" id="rules-container"><div class="secondary-empty"><i class="fa-regular fa-folder-open"></i><span>Memuat arsip protokol keluarga...</span></div></div>
-</article>
-</div>
-</section>
-<section class="tab-content block dashboard-view animate-[fadeIn_0.4s_ease-in-out] pb-4" id="tab-dashboard">
-<div class="dashboard-hero">
-<div>
-<div class="eyebrow"><span class="status-dot"></span>House overview</div>
-<h3>Xaviera Command Chamber</h3>
-<p>Akses ringkasan aset, treasury, persediaan, dan aktivitas internal dari satu pusat kendali.</p>
-</div>
-<div class="hero-actions">
-<span class="connection-pill" id="db-status"><i class="fa-solid fa-circle-check"></i> Network Online</span>
-<span class="sync-pill" title="Waktu sinkronisasi data terakhir"><i class="fa-regular fa-clock"></i><span id="last-sync-time">Belum sinkron</span></span>
-<button class="soft-action" id="refresh-dashboard-btn" onclick="fetchInventory()"><i class="fa-solid fa-rotate"></i><span>Sync Data</span></button>
-</div>
-<img alt="" aria-hidden="true" class="dashboard-crest-watermark" src="assets/img/xaviera-family-logo.png"/></div>
-<div class="kpi-grid">
-<article class="kpi-card kpi-green">
-<div class="kpi-top"><span>Treasury</span><i class="fa-solid fa-arrow-trend-up"></i></div>
-<h3 id="stat-kas-bersih">...</h3>
-<p>Dana operasional keluarga</p>
-</article>
-<article class="kpi-card kpi-red">
-<div class="kpi-top"><span>Uncleared Funds</span><i class="fa-solid fa-wallet"></i></div>
-<h3 id="stat-kas-kotor">...</h3>
-<p>Dana belum dikonsolidasikan</p>
-</article>
-<article class="kpi-card kpi-orange">
-<div class="kpi-top"><span>Asset Types</span><i class="fa-solid fa-boxes-stacked"></i></div>
-<h3 id="stat-jenis-barang">0</h3>
-<p>Jenis aset tercatat</p>
-</article>
-<article class="kpi-card kpi-rose">
-<div class="kpi-top"><span>Critical Assets</span><i class="fa-solid fa-triangle-exclamation"></i></div>
-<h3 id="stat-barang-kritis">0 Item</h3>
-<p>Persediaan perlu perhatian</p>
-</article>
-</div>
-<div class="dashboard-grid">
-<article class="dashboard-panel analytics-panel">
-<div class="panel-heading">
-<div><span class="panel-kicker">Asset intelligence</span><h3>Current asset distribution</h3></div>
-<i class="fa-solid fa-chart-simple panel-icon"></i>
-</div>
-<div class="chart-stage"><canvas id="bloodlineChart"></canvas></div>
-</article>
-<aside class="dashboard-panel treasury-panel">
-<div class="panel-heading">
-<div><span class="panel-kicker">House treasury</span><h3>Treasury overview</h3></div>
-<i class="fa-solid fa-vault panel-icon"></i>
-</div>
-<div class="treasury-list">
-<div class="treasury-row">
-<div class="treasury-balance-info">
-<span class="treasury-label">Available treasury</span>
-<strong id="display-faction-funds">Memuat...</strong>
-</div>
-<div aria-label="Aksi kas tersedia" class="admin-only treasury-actions" data-staff-control="treasury">
-<button aria-label="Withdraw house treasury" class="treasury-action treasury-action-minus" onclick="changeTreasuryBalance('clean', 'withdraw')" title="Withdraw house treasury" type="button">
-<i class="fa-solid fa-minus"></i>
-</button>
-<button aria-label="Deposit house treasury" class="treasury-action treasury-action-plus" onclick="changeTreasuryBalance('clean', 'deposit')" title="Deposit house treasury" type="button">
-<i class="fa-solid fa-plus"></i>
-</button>
-</div>
-</div>
-<div class="treasury-row">
-<div class="treasury-balance-info">
-<span class="treasury-label">Unprocessed funds</span>
-<strong class="danger-value" id="display-dirty-funds">Memuat...</strong>
-</div>
-<div aria-label="Aksi uang kotor" class="admin-only treasury-actions" data-staff-control="treasury">
-<button aria-label="Withdraw unprocessed funds" class="treasury-action treasury-action-minus" onclick="changeTreasuryBalance('dirty', 'withdraw')" title="Withdraw unprocessed funds" type="button">
-<i class="fa-solid fa-minus"></i>
-</button>
-<button aria-label="Deposit unprocessed funds" class="treasury-action treasury-action-plus" onclick="changeTreasuryBalance('dirty', 'deposit')" title="Deposit unprocessed funds" type="button">
-<i class="fa-solid fa-plus"></i>
-</button>
-</div>
-</div>
-<div class="treasury-row">
-<div><span class="treasury-label">Critical threshold</span><strong>≤ <span id="critical-limit-display">500</span> unit</strong></div>
-<button class="admin-only icon-action" data-staff-control="treasury" onclick="adjustCriticalLimit()" title="Atur batas kritis"><i class="fa-solid fa-pen"></i></button>
-</div>
-</div>
-<div class="treasury-note"><i class="fa-solid fa-shield-halved"></i><span>Perubahan treasury dan batas kritis hanya tersedia bagi otoritas keluarga.</span></div>
-</aside>
-</div>
-<article class="dashboard-panel inventory-panel">
-<div class="inventory-toolbar">
-<div>
-<span class="panel-kicker">Estate manifest</span>
-<h3>Asset inventory</h3>
-<p>Telusuri aset dan pantau ketersediaannya berdasarkan lokasi penyimpanan.</p>
-</div>
-<div class="inventory-controls">
-<div class="inventory-filters">
-<label class="search-field"><i class="fa-solid fa-magnifying-glass"></i><input id="search-inventory" onkeyup="renderTable()" placeholder="Cari barang..." type="text"/></label>
-<select id="filter-lokasi" onchange="fetchInventory()"><option value="Semua">Semua lokasi</option><option value="Brankas Bos">Private Vault</option><option value="Loker Bersama">Shared Depository</option><option value="Gudang Umum">Central Storehouse</option></select>
-</div>
-<div aria-label="Legenda status stok" class="inventory-status-legend">
-<span class="legend-item legend-safe"><i></i>Aman</span>
-<span class="legend-item legend-watch"><i></i>Menipis</span>
-<span class="legend-item legend-critical"><i></i>Kritis</span>
-</div>
-</div>
-</div>
-<div class="inventory-section">
-<div class="inventory-section-title"><span class="section-mark armory-mark"><i class="fa-solid fa-gun"></i></span><div><h4>Armory Vault</h4><p>Persenjataan dan perlengkapan khusus</p></div></div>
-<div class="inventory-table-wrap" id="inventory-senjata-container"><div class="empty-state">Memuat senjata...</div></div>
-</div>
-<div class="inventory-section resource-section">
-<div class="inventory-section-title"><span class="section-mark resource-mark"><i class="fa-solid fa-box-open"></i></span><div><h4>Estate Resources</h4><p>Aset umum dan material operasional</p></div></div>
-<div class="inventory-table-wrap" id="inventory-resource-container"><div class="empty-state">Memuat resource...</div></div>
-</div>
-</article>
-</section>
-<section class="tab-content hidden animate-[fadeIn_0.3s_ease-in-out] secondary-page roster-page" id="tab-roster">
-<div class="secondary-page-hero">
-<div>
-<div class="eyebrow"><span class="status-dot"></span> Family registry</div>
-<h3>Registry anggota Xaviera</h3>
-<p>Kelola identitas, posisi, dan status operasional anggota keluarga dalam satu registry.</p>
-</div>
-<div class="secondary-hero-actions"><span class="secondary-status-chip" id="roster-count"><i class="fa-solid fa-users"></i> 0 Anggota</span></div>
-</div>
-<div class="roster-layout">
-<aside class="secondary-panel form-panel admin-only h-fit">
-<div class="secondary-panel-head">
-<div class="panel-title-group"><span class="section-icon"><i class="fa-solid fa-user-plus"></i></span><div><span class="panel-kicker">Family registry</span><h3>Register member</h3></div></div>
-<span class="panel-mini-badge">Staff only</span>
-</div>
-<form class="secondary-form" id="form-tambah-anggota" onsubmit="handleAddMember(event)">
-<div class="field-group"><label for="roster-name">Nama / alias</label><input id="roster-name" placeholder="Nama in-game" required="" type="text"/></div>
-<div class="field-group"><label for="roster-rank">Posisi / rank</label><select id="roster-rank" required=""><option value="President">Head of House</option><option value="Vice President">Deputy Head</option><option value="Sgt at Arms">Head of Security</option><option value="Treasury">Treasury Keeper</option><option value="Road Captain">Field Coordinator</option><option value="Enforcer">Security Officer</option><option value="Member">Family Member</option><option value="Prospect">Associate</option><option value="Hangaround">Affiliate</option></select></div>
-<div class="field-group"><label for="roster-status">Operational status</label><select id="roster-status" required=""><option value="Aktif">🟢 Active</option><option value="Inaktif">⚪ Inactive / Unavailable</option><option value="Penjara">🔴 Restricted / Critical</option></select></div>
-<button class="primary-page-action" type="submit"><i class="fa-solid fa-user-check"></i><span>Register Member</span></button>
-</form>
-</aside>
-<article class="secondary-panel roster-directory-panel">
-<div class="secondary-panel-head">
-<div class="panel-title-group"><span class="section-icon"><i class="fa-solid fa-users-viewfinder"></i></span><div><span class="panel-kicker">Directory</span><h3>Family registry database</h3></div></div>
-<span class="panel-mini-badge muted"><i class="fa-solid fa-database"></i> Live data</span>
-</div>
-<div class="modern-table-wrap sidebar-scroll">
-<table class="modern-table roster-table">
-<thead><tr><th>Nama anggota</th><th>Posisi / rank</th><th class="text-center">Status</th><th class="text-center admin-only">Tindakan</th></tr></thead>
-<tbody id="roster-table-body"><tr><td class="secondary-empty-cell" colspan="4">Memuat roster...</td></tr></tbody>
-</table>
-</div>
-</article>
-</div>
-</section>
-<section class="tab-content hidden animate-[fadeIn_0.3s_ease-in-out] secondary-page transaction-page" id="tab-bisnis">
-<div class="secondary-page-hero">
-<div>
-<div class="eyebrow"><span class="status-dot"></span> Estate commerce</div>
-<h3>Business &amp; treasury operations</h3>
-<p>Kelola penjualan, akuisisi, dan paket aset dengan verifikasi nilai sebelum transaksi dikonfirmasi.</p>
-</div>
-<div class="secondary-hero-actions"><span class="secondary-status-chip"><i class="fa-solid fa-shield-halved"></i> Authorized access</span></div>
-</div>
-<div class="transaction-grid">
-<article class="secondary-panel transaction-card transaction-single">
-<div class="secondary-panel-head">
-<div class="panel-title-group"><span class="section-icon green"><i class="fa-solid fa-box"></i></span><div><span class="panel-kicker">Direct asset</span><h3>Direct transaction</h3></div></div>
-<span class="panel-mini-badge green">Direct trade</span>
-</div>
-<form class="secondary-form transaction-form" id="form-bisnis-satuan" onsubmit="handleBusinessSatuan(event)">
-<div class="field-group"><label for="satuan-tipe">Jenis transaksi</label><select id="satuan-tipe" onchange="toggleSatuanColors()" required=""><option value="Jual">💸 SALE / OUTGOING</option><option value="Beli">📥 ACQUISITION / RESTOCK</option></select></div>
-<div class="field-group"><label for="satuan-item">Pilih barang</label><select id="satuan-item" required=""></select></div>
-<div class="form-two-cols"><div class="field-group"><label for="satuan-qty">Jumlah / Qty</label><input id="satuan-qty" min="1" oninput="calcSatuanTotal()" required="" type="number"/></div><div class="field-group"><label for="satuan-harga">Harga per unit ($)</label><input id="satuan-harga" min="0" oninput="calcSatuanTotal()" required="" type="number"/></div></div>
-<div class="field-group"><label for="satuan-target">Klien / pemasok</label><input id="satuan-target" placeholder="Nama pihak transaksi" required="" type="text"/></div>
-<div class="transaction-total" id="satuan-total-box"><div><span>Total nilai</span><small>Nilai transaksi yang akan dicatat</small></div><strong id="display-satuan-total">$ 0</strong></div>
-<button class="primary-page-action transaction-confirm green-action" type="submit"><i class="fa-solid fa-check"></i><span>Konfirmasi transaksi</span></button>
-</form>
-</article>
-<article class="secondary-panel transaction-card transaction-bundle">
-<div class="secondary-panel-head">
-<div class="panel-title-group"><span class="section-icon"><i class="fa-solid fa-boxes-packing"></i></span><div><span class="panel-kicker">Estate bundle</span><h3>Bundle transaction</h3></div></div>
-<span class="panel-mini-badge">Bundle trade</span>
-</div>
-<form class="secondary-form transaction-form" id="form-bisnis-paket" onsubmit="handleBusinessPaket(event)">
-<div class="field-group"><label for="paket-tipe">Jenis transaksi</label><select id="paket-tipe" onchange="togglePaketColors()" required=""><option value="Jual">💸 SALE / OUTGOING</option><option value="Beli">📥 ACQUISITION / RESTOCK</option></select></div>
-<div class="field-group"><label for="paket-bundle">Pilih paket</label><select id="paket-bundle" onchange="calcPaketTotal()" required=""></select></div>
-<div class="form-two-cols"><div class="field-group"><label for="paket-qty">Jumlah paket</label><input id="paket-qty" min="1" oninput="calcPaketTotal()" required="" type="number"/></div><div class="field-group"><label for="paket-target">Klien / pemasok</label><input id="paket-target" placeholder="Nama pihak transaksi" required="" type="text"/></div></div>
-<div class="transaction-total orange" id="paket-total-box"><div><span>Total nilai</span><small>Nilai paket yang akan dicatat</small></div><strong id="display-paket-total">$ 0</strong></div>
-<button class="primary-page-action transaction-confirm" type="submit"><i class="fa-solid fa-check"></i><span>Konfirmasi transaksi</span></button>
-</form>
-</article>
-</div>
-<div class="bundle-management-grid">
-<aside class="secondary-panel bundle-builder h-fit">
-<div class="secondary-panel-head">
-<div class="panel-title-group"><span class="section-icon neutral"><i class="fa-solid fa-sliders"></i></span><div><span class="panel-kicker">Package architect</span><h3>Create asset package</h3></div></div>
-</div>
-<form class="secondary-form compact-form" id="form-buat-paket" onsubmit="handleCreateBundle(event)">
-<div class="form-two-cols bundle-meta"><div class="field-group"><label for="create-bundle-name">Nama paket</label><input id="create-bundle-name" placeholder="Contoh: Starter Pack" required="" type="text"/></div><div class="field-group"><label for="create-bundle-price">Harga paket ($)</label><input id="create-bundle-price" min="0" placeholder="0" required="" type="number"/></div></div>
-<div class="bundle-items-box"><div class="bundle-items-title"><span>Isi barang</span><small>Maksimal 3 item</small></div><div class="bundle-item-row"><select id="bundle-item1" required=""></select><input id="bundle-qty1" min="1" placeholder="Qty" required="" type="number"/></div><div class="bundle-item-row"><select id="bundle-item2"></select><input id="bundle-qty2" min="1" placeholder="Qty" type="number"/></div><div class="bundle-item-row"><select id="bundle-item3"></select><input id="bundle-qty3" min="1" placeholder="Qty" type="number"/></div></div>
-<button class="secondary-page-action" type="submit"><i class="fa-solid fa-floppy-disk"></i><span>Simpan konfigurasi</span></button>
-</form>
-</aside>
-<article class="secondary-panel bundle-database-panel">
-<div class="secondary-panel-head"><div class="panel-title-group"><span class="section-icon neutral"><i class="fa-solid fa-boxes-stacked"></i></span><div><span class="panel-kicker">Package registry</span><h3>Available asset packages</h3></div></div><span class="panel-mini-badge muted"><i class="fa-solid fa-database"></i> Live</span></div>
-<div class="modern-table-wrap sidebar-scroll"><table class="modern-table bundle-table"><thead><tr><th>Nama paket</th><th>Rincian isi</th><th class="text-right">Harga set</th><th class="text-center">Hapus</th></tr></thead><tbody id="bundles-table-body"><tr><td class="secondary-empty-cell" colspan="4">Memuat data paket...</td></tr></tbody></table></div>
-</article>
-</div>
-</section>
-<section class="tab-content hidden animate-[fadeIn_0.3s_ease-in-out] secondary-page workflow-page" id="tab-logistik"><div class="secondary-page-hero"><div><div class="eyebrow"><span class="status-dot"></span> Asset control</div><h3>Internal asset movement</h3><p>Catat pengeluaran atau penyimpanan aset tanpa memengaruhi saldo treasury.</p></div><div class="secondary-hero-actions"><span class="secondary-status-chip"><i class="fa-solid fa-arrow-right-arrow-left"></i> Inventory operation</span></div></div>
-<div class="secondary-panel workflow-panel">
-<div class="secondary-panel-head workflow-panel-head"><div class="panel-title-group"><span class="section-icon"><i class="fa-solid fa-boxes-stacked"></i></span><div><span class="panel-kicker">Inventory operation</span><h3>Record asset movement</h3></div></div><span class="panel-mini-badge muted">No treasury impact</span></div>
-<form class="secondary-form workflow-form" id="form-mutasi-gudang" onsubmit="handleMutasiGudang(event)">
-<div class="field-group"><label class="block text-xs uppercase text-zinc-400 mb-2 font-semibold">Jenis Pergerakan Aset</label><select class="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-sm text-zinc-200" id="mutasi-tipe" onchange="toggleMutasiColors()" required=""><option value="Ambil">📤 WITHDRAW ASSET</option><option value="Simpan">📥 DEPOSIT ASSET</option></select></div>
-<div class="field-group"><label class="block text-xs uppercase text-zinc-400 mb-2 font-semibold">Pilih Aset</label><select class="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-sm text-zinc-200" id="mutasi-item" required=""></select></div>
-<div class="field-group"><label class="block text-xs uppercase text-zinc-400 mb-2 font-semibold">Jumlah (Qty)</label><input class="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-sm text-zinc-200" id="mutasi-qty" min="1" required="" type="number"/></div>
-<div class="field-group"><label class="block text-xs uppercase text-zinc-400 mb-2 font-semibold">Catatan / Tujuan Pergerakan</label><input class="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-sm text-zinc-200" id="mutasi-keterangan" required="" type="text"/></div>
-<button class="primary-page-action workflow-submit" id="mutasi-btn" type="submit"><i class="fa-solid fa-boxes-stacked"></i> Record Movement</button>
-</form>
-</div>
-</section>
-<section class="tab-content hidden animate-[fadeIn_0.3s_ease-in-out] secondary-page workflow-page" id="tab-tambah"><div class="secondary-page-hero"><div><div class="eyebrow"><span class="status-dot"></span> Asset registry</div><h3>Register a new estate asset</h3><p>Tambahkan jenis aset baru, kategori, lokasi penyimpanan, dan stok awal ke inventory estate.</p></div><div class="secondary-hero-actions"><span class="secondary-status-chip"><i class="fa-solid fa-plus"></i> Registry access</span></div></div>
-<div class="secondary-panel workflow-panel">
-<div class="secondary-panel-head workflow-panel-head"><div class="panel-title-group"><span class="section-icon"><i class="fa-solid fa-box-open"></i></span><div><span class="panel-kicker">New record</span><h3>Asset registration form</h3></div></div><span class="panel-mini-badge">Authorized staff</span></div>
-<form class="secondary-form workflow-form" id="form-tambah-barang" onsubmit="handleAddNewItem(event)">
-<div class="field-group"><label class="block text-xs uppercase text-zinc-400 mb-2 font-semibold">Nama Aset / Code Name</label><input class="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-sm text-zinc-200" id="input-tambah-nama" required="" type="text"/></div>
-<div class="field-group"><label class="block text-xs uppercase text-zinc-400 mb-2 font-semibold">Kategori Aset</label><select class="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-sm text-zinc-200" id="input-tambah-kategori" required=""><option value="Resource">📦 General Asset / Material</option><option value="Senjata">🛡️ Armory / Security</option></select></div>
-<div class="field-group"><label class="block text-xs uppercase text-zinc-400 mb-2 font-semibold">Lokasi Penyimpanan</label><select class="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-sm text-zinc-200" id="input-tambah-lokasi" required=""><option value="Brankas Bos">Private Vault</option><option value="Loker Bersama">Shared Depository</option><option value="Gudang Umum">Central Storehouse</option></select></div>
-<div class="field-group"><label class="block text-xs uppercase text-zinc-400 mb-2 font-semibold">Stok Awal / Initial Stock</label><input class="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-sm text-zinc-200" id="input-tambah-stok" min="0" required="" type="number"/></div>
-<button class="primary-page-action workflow-submit" type="submit"><i class="fa-solid fa-save"></i> Register to Estate</button>
-</form>
-</div>
-</section>
-<section class="tab-content hidden animate-[fadeIn_0.3s_ease-in-out] secondary-page ledger-page" id="tab-logs">
-<div class="secondary-page-hero">
-<div>
-<div class="eyebrow"><span class="status-dot"></span> House audit</div>
-<h3>Activity &amp; treasury ledger</h3>
-<p>Telusuri seluruh pergerakan aset, transaksi, dan treasury dalam satu pusat audit keluarga.</p>
-</div>
-<div class="secondary-hero-actions"><span class="secondary-status-chip"><i class="fa-solid fa-clock-rotate-left"></i> Live audit</span></div>
-</div>
-<article class="secondary-panel ledger-panel ledger-main-panel">
-<div class="ledger-toolbar">
-<div class="panel-title-group"><span class="section-icon"><i class="fa-solid fa-list-ul"></i></span><div><span class="panel-kicker">Operational history</span><h3>Business &amp; asset activity</h3></div></div>
-<div class="ledger-controls">
-<button class="icon-page-action" onclick="toggleTimelineView()" title="Ubah tampilan"><i class="fa-solid fa-stream" id="timeline-toggle-icon"></i></button>
-<label class="ledger-search"><i class="fa-solid fa-magnifying-glass"></i><input id="search-logs" onkeyup="renderLogsTable()" placeholder="Cari item, operator, target..." type="text"/></label>
-<button class="secondary-page-action compact" onclick="fetchLogs()"><i class="fa-solid fa-rotate"></i><span>Refresh</span></button>
-</div>
-</div>
-<div class="ledger-content sidebar-scroll" id="logs-container"><div class="secondary-empty"><i class="fa-solid fa-spinner"></i><span>Memuat ledger...</span></div></div>
-</article>
-<article class="secondary-panel ledger-panel vault-ledger-panel">
-<div class="ledger-toolbar">
-<div class="panel-title-group"><span class="section-icon green"><i class="fa-solid fa-vault"></i></span><div><span class="panel-kicker">Treasury history</span><h3>Treasury movement history</h3></div></div>
-<button class="secondary-page-action compact green-outline" onclick="fetchFundLogs()"><i class="fa-solid fa-rotate"></i><span>Refresh</span></button>
-</div>
-<div class="modern-table-wrap vault-table-wrap sidebar-scroll"><table class="modern-table vault-ledger-table"><thead><tr><th class="text-center">Waktu (WIB)</th><th class="text-center">Movement type</th><th class="text-right">Amount</th><th>Operator</th></tr></thead><tbody id="fund-logs-table-body"><tr><td class="secondary-empty-cell" colspan="4">Loading treasury records...</td></tr></tbody></table></div>
-</article>
-</section>
-<section class="tab-content hidden animate-[fadeIn_0.3s_ease-in-out] secondary-page workflow-page archive-page" id="tab-rekap"><div class="secondary-page-hero"><div><div class="eyebrow"><span class="status-dot"></span> Records office</div><h3>Monthly estate archive</h3><p>Ekspor histori pergerakan aset dan transaksi untuk periode bulanan dalam format Excel.</p></div><div class="secondary-hero-actions"><span class="secondary-status-chip"><i class="fa-solid fa-file-excel"></i> Excel export</span></div></div>
-<div class="secondary-panel workflow-panel archive-panel">
-<div class="secondary-panel-head workflow-panel-head"><div class="panel-title-group"><span class="section-icon"><i class="fa-solid fa-file-shield"></i></span><div><span class="panel-kicker">Archive export</span><h3>Select reporting period</h3></div></div></div>
-<div class="archive-content">
-<div class="archive-notice"><i class="fa-solid fa-circle-info"></i>Sistem akan mengekspor seluruh catatan pergerakan aset dan treasury ke file `.xlsx`.</div>
-<div class="archive-period-grid"><div class="field-group"><label class="block text-xs uppercase text-zinc-400 mb-2 font-semibold">Bulan</label><select class="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-sm text-zinc-200" id="rekap-bulan"></select></div><div class="field-group"><label class="block text-xs uppercase text-zinc-400 mb-2 font-semibold">Tahun</label><select class="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-sm text-zinc-200" id="rekap-tahun"><option value="2026">2026</option><option value="2027">2027</option></select></div></div>
-<button class="primary-page-action archive-download" onclick="exportMonthlyRecapExcel()"><i class="fa-solid fa-download"></i> Download Estate Archive (.xlsx)</button>
-</div>
-</div>
-</section>
-</main>
-<div aria-hidden="true" class="command-palette hidden" id="command-palette">
-<div class="command-palette-backdrop" data-command-close=""></div>
-<section aria-labelledby="command-title" aria-modal="true" class="command-dialog" role="dialog">
-<div class="command-search-wrap">
-<i class="fa-solid fa-magnifying-glass"></i>
-<input aria-label="Cari quick menu" autocomplete="off" id="command-search" placeholder="Cari halaman atau aksi..." type="text"/>
-<kbd>ESC</kbd>
-</div>
-<div class="command-dialog-head">
-<div>
-<span class="panel-kicker">Estate navigation</span>
-<h3 id="command-title">Command Menu</h3>
-</div>
-<span class="command-hint">Enter untuk membuka</span>
-</div>
-<div class="command-list" id="command-list">
-<button class="command-item" data-label="dashboard stock overview gudang" data-tab="dashboard" type="button">
-<span class="command-item-icon"><i class="fa-solid fa-gauge-high"></i></span><span><strong>Command Chamber</strong><small>Overview of assets and treasury</small></span><i class="fa-solid fa-arrow-right"></i>
-</button>
-<button class="command-item" data-label="peta operasional radar lokasi" data-tab="map" type="button">
-<span class="command-item-icon"><i class="fa-solid fa-map-location-dot"></i></span><span><strong>Territory Intelligence</strong><small>Estate points and storage locations</small></span><i class="fa-solid fa-arrow-right"></i>
-</button>
-<button class="command-item" data-label="roster anggota member" data-tab="roster" type="button">
-<span class="command-item-icon"><i class="fa-solid fa-users"></i></span><span><strong>House Directory</strong><small>Xaviera Family member registry</small></span><i class="fa-solid fa-arrow-right"></i>
-</button>
-<button class="command-item" data-label="sop panduan aturan" data-tab="rules" type="button">
-<span class="command-item-icon"><i class="fa-solid fa-scroll"></i></span><span><strong>House Codex</strong><small>Internal rules and house protocols</small></span><i class="fa-solid fa-arrow-right"></i>
-</button>
-<button class="command-item admin-only" data-label="transaksi bisnis kas jual beli" data-tab="bisnis" type="button">
-<span class="command-item-icon"><i class="fa-solid fa-hand-holding-dollar"></i></span><span><strong>Business &amp; Treasury</strong><small>Sales, acquisitions, and asset packages</small></span><i class="fa-solid fa-arrow-right"></i>
-</button>
-<button class="command-item admin-only" data-label="mutasi logistik stok simpan ambil" data-tab="logistik" type="button">
-<span class="command-item-icon"><i class="fa-solid fa-people-carry-box"></i></span><span><strong>Asset Movement</strong><small>Withdraw or deposit inventory assets</small></span><i class="fa-solid fa-arrow-right"></i>
-</button><button class="command-item admin-only" data-label="asset registry register tambah barang aset inventory" data-tab="tambah" type="button"><span class="command-item-icon"><i class="fa-solid fa-box-open"></i></span><span><strong>Asset Registry</strong><small>Register a new inventory asset</small></span><i class="fa-solid fa-arrow-right"></i></button>
-<button class="command-item admin-only" data-label="ledger audit logs riwayat" data-tab="logs" type="button">
-<span class="command-item-icon"><i class="fa-solid fa-clock-rotate-left"></i></span><span><strong>Audit Ledger</strong><small>Transaction, inventory, and treasury history</small></span><i class="fa-solid fa-arrow-right"></i>
-</button>
-<button class="command-item admin-only" data-label="rekap export excel laporan" data-tab="rekap" type="button">
-<span class="command-item-icon"><i class="fa-solid fa-file-excel"></i></span><span><strong>Monthly Archive</strong><small>Export monthly records to Excel</small></span><i class="fa-solid fa-arrow-right"></i>
-</button>
-</div>
-<div class="command-empty hidden" id="command-empty"><i class="fa-solid fa-magnifying-glass"></i><span>Tidak ada menu yang cocok.</span></div>
-</section>
-</div>
-</div>
-<script src="assets/js/app.js"></script>
-</body>
-</html>
+// ==========================================
+// 🌐 VARIABEL GLOBAL
+// ==========================================
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+let inventoryData = []; let bundlesData = []; let globalLogsData = []; let membersData = []; let rulesData = [];
+let currentRole = 'tamu'; let currentOperatorName = 'Tamu'; let currentFunds = 0; let currentDirtyFunds = 0; let currentCriticalLimit = 500; 
+let liveChartInstance = null; let isTimelineView = false; let isHackerMode = false;
+let factionMap = null; let mapMarkers = {};
+
+// ==========================================
+// 🛠️ SETUP AWAL & UI TOOLS
+// ==========================================
+const bulanSelect = document.getElementById('rekap-bulan');
+const namaBulan = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+if (bulanSelect) { namaBulan.forEach((b, i) => { const val = String(i+1).padStart(2, '0'); bulanSelect.innerHTML += `<option value="${val}">${b}</option>`; }); }
+
+const formatMoney = (amount) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(amount);
+
+// UI-only naming layer. Database values remain unchanged for compatibility.
+const LOCATION_LABELS = {
+    'Brankas Bos': 'Private Vault',
+    'Loker Bersama': 'Shared Depository',
+    'Gudang Umum': 'Central Storehouse',
+    'Bundle Area': 'Bundle Registry'
+};
+const RANK_LABELS = {
+    'Head of House': 'Head of House',
+    'Deputy Head': 'Deputy Head',
+    'Head of Security': 'Head of Security',
+    'Treasury Keeper': 'Treasury Keeper',
+    'Field Coordinator': 'Field Coordinator',
+    'Security Officer': 'Security Officer',
+    'Family Member': 'Family Member',
+    'Associate': 'Associate',
+    'Affiliate': 'Affiliate'
+};
+function getLocationLabel(value) { return LOCATION_LABELS[value] || value || '-'; }
+function getRankLabel(value) { return RANK_LABELS[value] || value || '-'; }
+function getRoleLabel(value) { return ({ tamu: 'Guest / Visitor', president: 'Head of House', vice_president: 'Deputy Head', treasury: 'Treasury Keeper' })[value] || value || '-'; }
+setInterval(() => { const clock = document.getElementById('live-clock'); if (clock) clock.innerText = new Date().toLocaleTimeString('en-US', { hour12: false }); }, 1000);
+
+const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3500, timerProgressBar: true, didOpen: (toast) => { toast.onmouseenter = Swal.stopTimer; toast.onmouseleave = Swal.resumeTimer; } });
+function showToast(title, icon='success') { Toast.fire({ icon: icon, title: title, background: isHackerMode ? '#080503' : '#120d0a', color: isHackerMode ? '#f0dba5' : '#f3ead9' }); }
+function showMessage(title, text, icon) { Swal.fire({ title: title, text: text, icon: icon, background: isHackerMode ? '#080503' : '#120d0a', color: isHackerMode ? '#f0dba5' : '#f3ead9', confirmButtonColor: isHackerMode ? '#7f5f30' : '#a47c3e' }); }
+
+function toggleHackerMode() {
+    isHackerMode = !isHackerMode;
+    if(isHackerMode) { document.body.classList.add('hacker-mode'); showToast('CEREMONIAL DISPLAY MODE ACTIVE', 'warning'); } 
+    else { document.body.classList.remove('hacker-mode'); showToast('Ceremonial Display Mode Off', 'info'); }
+    if(document.getElementById('tab-dashboard').classList.contains('block')) renderAnalyticsChart();
+}
+
+function confirmTransactionBox(title, text) {
+    return Swal.fire({ title: title, text: text, icon: 'warning', showCancelButton: true, confirmButtonColor: '#a47c3e', cancelButtonColor: '#3f3f46', background: isHackerMode ? '#080503' : '#120d0a', color: isHackerMode ? '#f0dba5' : '#f3ead9' }).then(result => result.isConfirmed);
+}
+
+// ==========================================
+// 🛡️ SISTEM AUTENTIKASI & ROLE
+// ==========================================
+function toggleLoginInputs() {
+    const role = document.getElementById('login-role').value; const passContainer = document.getElementById('password-container'); const aliasContainer = document.getElementById('alias-container'); const passInput = document.getElementById('login-password'); const aliasInput = document.getElementById('login-name');
+    if (role !== 'tamu') { passContainer.classList.remove('hidden'); passInput.required = true; } else { passContainer.classList.add('hidden'); passInput.required = false; }
+    if (role === 'treasury') { aliasContainer.classList.remove('hidden'); aliasInput.required = true; } else { aliasContainer.classList.add('hidden'); aliasInput.required = false; aliasInput.value = ''; }
+}
+
+function handleLogin(event) {
+    event.preventDefault();
+    const selectedRole = document.getElementById('login-role').value; const enteredPassword = document.getElementById('login-password').value; const enteredName = document.getElementById('login-name').value;
+    if (selectedRole !== 'tamu') {
+        if (enteredPassword === ADMIN_PASSWORD) { currentRole = selectedRole; if(selectedRole === 'president') currentOperatorName = 'Head of House'; else if(selectedRole === 'vice_president') currentOperatorName = 'Deputy Head'; else if(selectedRole === 'treasury') currentOperatorName = enteredName || 'Treasury Keeper'; } else { showMessage('Akses Ditolak', 'Access key tidak sesuai. Periksa kembali kredensial Anda.', 'error'); return; }
+    } else { currentRole = 'tamu'; currentOperatorName = 'Tamu'; }
+
+    document.getElementById('login-screen').classList.add('hidden'); document.getElementById('app-container').classList.remove('hidden'); syncSidebarForViewport();
+    setupRoleUI(); fetchInventory(); fetchLogs(); fetchTickerLogs(); fetchFundLogs(); fetchMembers(); fetchRules(); enableRealtimeSync();
+}
+
+function setupRoleUI() {
+    const adminElements = document.querySelectorAll('.admin-only');
+    const treasuryStaffControls = document.querySelectorAll('[data-staff-control="treasury"]');
+    const userName = document.getElementById('user-name');
+    const userRoleBadge = document.getElementById('user-role-badge');
+    const userIcon = document.getElementById('user-icon');
+    const isStaff = (currentRole !== 'tamu');
+
+    if (isStaff) {
+        adminElements.forEach(el => el.classList.remove('hidden'));
+        treasuryStaffControls.forEach(el => {
+            el.classList.remove('hidden');
+            el.style.removeProperty('display');
+        });
+
+        if (currentRole === 'president') {
+            userName.innerText = currentOperatorName;
+            userRoleBadge.innerText = "HEAD OF HOUSE";
+            userIcon.className = "fa-solid fa-crown text-lg";
+        } else if (currentRole === 'vice_president') {
+            userName.innerText = currentOperatorName;
+            userRoleBadge.innerText = "DEPUTY HEAD";
+            userIcon.className = "fa-solid fa-user-shield text-lg";
+        } else if (currentRole === 'treasury') {
+            userName.innerText = currentOperatorName;
+            userRoleBadge.innerText = "TREASURY";
+            userIcon.className = "fa-solid fa-sack-dollar text-lg";
+        }
+    } else {
+        adminElements.forEach(el => el.classList.add('hidden'));
+        treasuryStaffControls.forEach(el => {
+            el.classList.add('hidden');
+            el.style.setProperty('display', 'none', 'important');
+        });
+        userName.innerText = currentOperatorName;
+        userRoleBadge.innerText = "Tamu";
+        userIcon.className = "fa-solid fa-eye text-base";
+        switchTab('dashboard');
+    }
+}
+function getOperatorName() { if (currentRole === 'tamu') return `Tamu`; if (currentRole === 'president') return "Head of House"; if (currentRole === 'vice_president') return "Deputy Head"; return `Treasury | ${currentOperatorName}`; }
+
+async function handleLogout() {
+    if(await confirmTransactionBox('End Session?', "Sesi akses estate akan diakhiri.")) { document.getElementById('login-password').value = ''; document.getElementById('app-container').classList.add('hidden'); document.getElementById('login-screen').classList.remove('hidden'); }
+}
+function showIDCard() {
+    if(currentRole === 'tamu') return showToast('Visitor access tidak memiliki Estate Credential', 'info');
+    const myLogs = globalLogsData.filter(l => l.operator === getOperatorName()); const totalActions = myLogs.length; const totalVol = myLogs.reduce((acc, curr) => acc + (curr.total_price || 0), 0);
+    Swal.fire({
+        html: `<div class="text-center p-2"><i class="fa-solid fa-id-card text-6xl text-orange-500 mb-4 drop-shadow-[0_0_15px_rgba(234,88,12,0.8)]"></i><h2 class="text-2xl font-bold font-mono text-zinc-100 uppercase tracking-widest">${currentOperatorName}</h2><p class="text-sm text-zinc-400 mb-6 font-bold tracking-widest">${getRoleLabel(currentRole).toUpperCase()}</p><div class="bg-zinc-900/80 p-4 rounded-xl border border-zinc-700 text-left space-y-3 shadow-inner"><div class="flex justify-between items-center border-b border-zinc-800 pb-2"><span class="text-xs text-zinc-500 uppercase font-bold"><i class="fa-solid fa-fingerprint mr-2"></i>Access Status</span> <span class="text-xs font-bold text-emerald-500 bg-emerald-900/30 px-2 py-0.5 rounded border border-emerald-800">AUTHORIZED</span></div><div class="flex justify-between items-center border-b border-zinc-800 pb-2"><span class="text-xs text-zinc-500 uppercase font-bold"><i class="fa-solid fa-clipboard-check mr-2"></i>Recorded Actions</span> <span class="text-sm font-bold text-orange-400 font-mono">${totalActions} OPS</span></div><div class="flex justify-between items-center"><span class="text-xs text-zinc-500 uppercase font-bold"><i class="fa-solid fa-sack-dollar mr-2"></i>Recorded Value</span> <span class="text-sm font-bold text-emerald-400 font-mono">${formatMoney(totalVol)}</span></div></div></div>`,
+        background: isHackerMode ? '#080503' : '#120d0a', color: isHackerMode ? '#f0dba5' : '#f3ead9', showConfirmButton: false, showCloseButton: true
+    });
+}
+
+// ==========================================
+// 📱 NAVIGASI & UI
+// ==========================================
+function isDesktopSidebarMode() {
+    return window.matchMedia('(min-width: 768px)').matches;
+}
+
+function updateSidebarToggleUI() {
+    const sidebar = document.getElementById('sidebar');
+    const button = document.getElementById('sidebar-toggle-btn');
+    const icon = document.getElementById('sidebar-toggle-icon');
+
+    if (!sidebar || !button || !icon) return;
+
+    const isDesktop = isDesktopSidebarMode();
+    const isOpen = isDesktop
+        ? !sidebar.classList.contains('sidebar-hidden')
+        : sidebar.classList.contains('mobile-open');
+
+    button.setAttribute('aria-expanded', String(isOpen));
+    button.title = isOpen ? 'Sembunyikan sidebar' : 'Tampilkan sidebar';
+    button.setAttribute('aria-label', button.title);
+
+    // Ikon dibuat kecil dan sederhana.
+    icon.className = isDesktop
+        ? 'fa-solid fa-ellipsis-vertical'
+        : `fa-solid ${isOpen ? 'fa-xmark' : 'fa-bars'}`;
+}
+
+function openSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const backdrop = document.getElementById('sidebar-backdrop');
+
+    if (!sidebar || !backdrop) return;
+
+    if (isDesktopSidebarMode()) {
+        sidebar.classList.remove('sidebar-hidden');
+        sidebar.classList.remove('mobile-open');
+        backdrop.classList.add('hidden');
+    } else {
+        sidebar.classList.remove('sidebar-hidden');
+        sidebar.classList.add('mobile-open');
+        backdrop.classList.remove('hidden');
+    }
+
+    updateSidebarToggleUI();
+}
+
+function closeSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const backdrop = document.getElementById('sidebar-backdrop');
+
+    if (!sidebar || !backdrop) return;
+
+    if (isDesktopSidebarMode()) {
+        sidebar.classList.add('sidebar-hidden');
+        sidebar.classList.remove('mobile-open');
+        backdrop.classList.add('hidden');
+    } else {
+        sidebar.classList.remove('mobile-open');
+        sidebar.classList.remove('sidebar-hidden');
+        backdrop.classList.add('hidden');
+    }
+
+    updateSidebarToggleUI();
+}
+
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    if (!sidebar) return;
+
+    if (isDesktopSidebarMode()) {
+        if (sidebar.classList.contains('sidebar-hidden')) {
+            openSidebar();
+        } else {
+            closeSidebar();
+        }
+    } else {
+        if (sidebar.classList.contains('mobile-open')) {
+            closeSidebar();
+        } else {
+            openSidebar();
+        }
+    }
+}
+
+function syncSidebarForViewport() {
+    const sidebar = document.getElementById('sidebar');
+    const backdrop = document.getElementById('sidebar-backdrop');
+
+    if (!sidebar || !backdrop) return;
+
+    // Saat berpindah ukuran layar, reset hanya state visual sidebar.
+    // Tidak menyentuh role, data, transaksi, atau logika bisnis.
+    if (isDesktopSidebarMode()) {
+        sidebar.classList.remove('mobile-open');
+        sidebar.classList.remove('sidebar-hidden');
+        backdrop.classList.add('hidden');
+    } else {
+        sidebar.classList.remove('sidebar-hidden');
+        sidebar.classList.remove('mobile-open');
+        backdrop.classList.add('hidden');
+    }
+
+    updateSidebarToggleUI();
+}
+
+window.addEventListener('resize', syncSidebarForViewport);
+
+function switchTab(tabId) {
+    const isStaff = (currentRole !== 'tamu');
+    if (!isStaff && tabId !== 'dashboard' && tabId !== 'roster' && tabId !== 'map' && tabId !== 'rules') tabId = 'dashboard';
+
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.add('hidden');
+        tab.classList.remove('flex');
+        tab.classList.remove('block');
+    });
+
+    if(tabId === 'map') {
+        document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+        document.getElementById(`tab-${tabId}`).classList.add('flex');
+    } else {
+        document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+        document.getElementById(`tab-${tabId}`).classList.add('block');
+    }
+
+    const titleMap = {
+        'dashboard': 'FAMILY COMMAND CENTER',
+        'bisnis': 'BUSINESS & TREASURY OPERATIONS',
+        'logistik': 'INTERNAL ASSET MOVEMENT',
+        'tambah': 'REGISTER NEW ASSET',
+        'logs': 'HOUSE AUDIT LEDGER',
+        'rekap': 'MONTHLY ESTATE ARCHIVE',
+        'roster': 'XAVIERA FAMILY REGISTRY',
+        'map': 'TERRITORY & ASSET NETWORK',
+        'rules': 'FAMILY CODEX & PROTOCOL'
+    };
+
+    const pageTitle = document.getElementById('page-title');
+    if (pageTitle) {
+        pageTitle.classList.add('ui-title-swap');
+        pageTitle.innerText = titleMap[tabId];
+        requestAnimationFrame(() => pageTitle.classList.remove('ui-title-swap'));
+    }
+
+    animateActiveTab(tabId);
+
+    document.querySelectorAll('#sidebar .nav-btn').forEach(btn => {
+        btn.classList.remove('is-active', 'bg-orange-600', 'text-white');
+    });
+
+    const activeNav = document.getElementById(`btn-${tabId}`);
+    if (activeNav) activeNav.classList.add('is-active');
+
+    if (tabId === 'logs' && isStaff) {
+        renderLogsTable();
+        fetchFundLogs();
+    }
+
+    if (tabId === 'dashboard') {
+        renderAnalyticsChart();
+    }
+
+    if (tabId === 'rekap' && isStaff) {
+        const d = new Date();
+        document.getElementById('rekap-bulan').value = String(d.getMonth() + 1).padStart(2, '0');
+        document.getElementById('rekap-tahun').value = String(d.getFullYear());
+    }
+
+    if (tabId === 'map') {
+        if (!factionMap) {
+            setTimeout(() => { initLeafletMap(); }, 200);
+        } else {
+            setTimeout(() => {
+                factionMap.invalidateSize();
+                updateMapPopups();
+            }, 200);
+        }
+    }
+
+    // Mobile: setelah memilih menu, drawer otomatis ditutup.
+    if (!isDesktopSidebarMode()) closeSidebar();
+}
+
+// ==========================================
+// 🗺️ LEAFLET.JS (PETA INTERAKTIF)
+// ==========================================
+function initLeafletMap() {
+    if (factionMap) return; 
+    const imageWidth = 4096; const imageHeight = 4096;
+    factionMap = L.map('faction-map', { crs: L.CRS.Simple, minZoom: -2, maxZoom: 3, zoomControl: false });
+    const bounds = [[0, 0], [imageHeight, imageWidth]];
+    
+    // GANTI 'assets/img/gtamap.jpg' dengan path gambarmu jika perlu
+    L.imageOverlay('assets/img/gtamap.png', bounds).addTo(factionMap);
+    factionMap.fitBounds(bounds); factionMap.setView([imageHeight / 2, imageWidth / 2], 0);
+    L.control.zoom({ position: 'bottomright' }).addTo(factionMap);
+
+    const iconStash = L.divIcon({ className: 'custom-div-icon', html: "<div class='w-8 h-8 bg-zinc-900 border-2 border-orange-500 rounded-full flex items-center justify-center text-orange-500 shadow-[0_0_10px_rgba(234,88,12,0.8)]'><i class='fa-solid fa-box-archive'></i></div>", iconSize: [32, 32], iconAnchor: [16, 16], popupAnchor: [0, -16] });
+    const iconBoss = L.divIcon({ className: 'custom-div-icon', html: "<div class='w-8 h-8 bg-zinc-900 border-2 border-red-500 rounded-full flex items-center justify-center text-red-500 shadow-[0_0_10px_rgba(239,68,68,0.8)]'><i class='fa-solid fa-crown'></i></div>", iconSize: [32, 32], iconAnchor: [16, 16], popupAnchor: [0, -16] });
+    
+    mapMarkers['Gudang Umum'] = L.marker([2000, 1500], {icon: iconStash}).addTo(factionMap);
+    mapMarkers['Loker Bersama'] = L.marker([2400, 2724], {icon: iconStash}).addTo(factionMap);
+    mapMarkers['Brankas Bos'] = L.marker([1800, 2200], {icon: iconBoss}).addTo(factionMap);
+    updateMapPopups();
+}
+
+function updateMapPopups() {
+    if(!factionMap) return; const locations = ['Gudang Umum', 'Loker Bersama', 'Brankas Bos'];
+    locations.forEach(loc => {
+        const items = inventoryData.filter(i => i.location === loc); const countSenjata = items.filter(i => i.category === 'Senjata').length; const countResource = items.filter(i => i.category === 'Resource').length; const totalStok = items.reduce((sum, item) => sum + item.stock, 0);
+        const popupHTML = `<div class="min-w-[160px]"><h4 class="font-bold text-orange-500 border-b border-zinc-700 pb-1 mb-2 uppercase text-[11px] tracking-wider"><i class="fa-solid fa-location-crosshairs mr-1"></i> ${getLocationLabel(loc)}</h4><div class="text-[11px] space-y-1 font-semibold"><div class="flex justify-between text-zinc-300"><span>Armory types:</span> <span class="text-rose-400 font-mono">${countSenjata}</span></div><div class="flex justify-between text-zinc-300"><span>General assets:</span> <span class="text-blue-400 font-mono">${countResource}</span></div><div class="flex justify-between border-t border-zinc-700 pt-1 mt-1 text-zinc-200"><span>Total units:</span> <span class="text-emerald-400 font-mono text-sm">${totalStok}</span></div></div></div>`;
+        if (mapMarkers[loc]) { mapMarkers[loc].bindPopup(popupHTML); }
+    }); showToast('Territory Network Synced', 'info');
+}
+
+// ==========================================
+// 📡 DISCORD WEBHOOK LOGIC
+// ==========================================
+async function sendToDiscord(title, description, color, fields) {
+    if (!DISCORD_WEBHOOK_URL) return;
+    const payload = { username: "XAVIERA FAMILY · ESTATE NETWORK", embeds: [{ title: title, description: description, color: color, fields: fields, timestamp: new Date().toISOString(), footer: { text: "Xaviera Family Estate Operations" } }] };
+    try { await fetch(DISCORD_WEBHOOK_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); } catch (error) {}
+}
+
+// ==========================================
+// 💰 SISTEM KEUANGAN KAS
+// ==========================================
+async function fetchFunds() {
+    try {
+        const { data, error } = await db.from('faction_funds').select('*').in('id', [1, 2, 3]); if (error) throw error;
+        const kasBersih = data.find(d => d.id === 1); if (kasBersih) { currentFunds = kasBersih.balance; const df = document.getElementById('display-faction-funds'); const skb = document.getElementById('stat-kas-bersih'); if(df) { df.innerText = formatMoney(currentFunds); df.className = `font-mono font-bold text-sm tracking-wider ${currentFunds < 0 ? 'text-rose-500' : 'text-emerald-400'}`; } if(skb) { skb.innerText = formatMoney(currentFunds); skb.className = `text-lg font-mono font-bold ${currentFunds < 0 ? 'text-rose-500' : 'text-emerald-400'}`; } }
+        const kasKotor = data.find(d => d.id === 2); if (kasKotor) { currentDirtyFunds = kasKotor.balance; const ddf = document.getElementById('display-dirty-funds'); const skk = document.getElementById('stat-kas-kotor'); if(ddf) { ddf.innerText = formatMoney(currentDirtyFunds); ddf.className = `font-mono font-bold text-sm tracking-wider ${currentDirtyFunds < 0 ? 'text-rose-600' : 'text-red-500'}`; } if(skk) { skk.innerText = formatMoney(currentDirtyFunds); skk.className = `text-lg font-mono font-bold ${currentDirtyFunds < 0 ? 'text-rose-600' : 'text-red-500'}`; } }
+        const stokKritis = data.find(d => d.id === 3); if (stokKritis) { currentCriticalLimit = stokKritis.balance; const critDisplay = document.getElementById('critical-limit-display'); if(critDisplay) critDisplay.innerText = currentCriticalLimit; }
+    } catch (err) {}
+}
+async function adjustCriticalLimit() {
+    if (currentRole === 'tamu') return; const { value: input } = await Swal.fire({ title: 'Set Critical Stock Threshold', input: 'number', inputLabel: `Current threshold: ${currentCriticalLimit} units`, showCancelButton: true, confirmButtonColor: '#a47c3e', background: isHackerMode ? '#080503' : '#120d0a', color: isHackerMode ? '#f0dba5' : '#f3ead9' }); if (!input) return; const newLimit = parseInt(input); if (isNaN(newLimit) || newLimit < 0) return showMessage("Invalid Value", "Masukkan angka 0 atau lebih.", "error");
+    const { error } = await db.from('faction_funds').upsert({ id: 3, balance: newLimit }); if (!error) { currentCriticalLimit = newLimit; document.getElementById('critical-limit-display').innerText = newLimit; showToast('Critical threshold updated', 'success'); renderTable(); renderAnalyticsChart(); updateQuickStats(); }
+}
+async function changeTreasuryBalance(account, action) {
+    if (currentRole === 'tamu') return;
+
+    const isDirty = account === 'dirty';
+    const isDeposit = action === 'deposit';
+    const currentBalance = isDirty ? currentDirtyFunds : currentFunds;
+    const accountName = isDirty ? 'Unprocessed Funds' : 'House Treasury';
+    const actionName = isDeposit ? 'Deposit' : 'Tarik';
+
+    const { value: input } = await Swal.fire({
+        title: `${actionName} ${accountName}`,
+        input: 'number',
+        inputLabel: `Saldo saat ini: ${formatMoney(currentBalance)}`,
+        inputPlaceholder: 'Masukkan nominal...',
+        inputAttributes: {
+            min: '1',
+            step: '1'
+        },
+        showCancelButton: true,
+        confirmButtonText: isDeposit ? 'Deposit' : 'Tarik',
+        cancelButtonText: 'Batal',
+        confirmButtonColor: isDeposit ? '#10b981' : '#ef4444',
+        background: isHackerMode ? '#000' : '#18181b',
+        color: isHackerMode ? '#f0dba5' : '#f4f4f5',
+        preConfirm: (value) => {
+            const amount = Number(value);
+            if (!Number.isFinite(amount) || amount <= 0) {
+                Swal.showValidationMessage('Masukkan nominal lebih dari 0.');
+                return false;
+            }
+            return amount;
+        }
+    });
+
+    if (input === undefined) return;
+
+    const amount = Number(input);
+    const signedAmount = isDeposit ? amount : -amount;
+    const newBalance = currentBalance + signedAmount;
+    const fundId = isDirty ? 2 : 1;
+
+    const { error } = await db
+        .from('faction_funds')
+        .update({ balance: newBalance })
+        .eq('id', fundId);
+
+    if (error) {
+        showMessage('Operation Failed', error.message, 'error');
+        return;
+    }
+
+    const logType = isDirty
+        ? (isDeposit ? 'Deposit Kotor' : 'Tarik Kotor')
+        : (isDeposit ? 'Deposit' : 'Tarik');
+
+    await db.from('vault_logs').insert([{
+        type: logType,
+        amount: amount,
+        operator: getOperatorName() + ' (Quick Action)'
+    }]);
+
+    await sendToDiscord(
+        isDirty ? `💸 Log Brankas: ${logType}` : `💰 Log Brankas: ${logType}`,
+        `Operator **${getOperatorName()}** ${isDeposit ? 'melakukan deposit ke' : 'menarik saldo dari'} ${accountName}.`,
+        isDirty
+            ? (isDeposit ? 15105570 : 10038562)
+            : (isDeposit ? 3066993 : 15158332),
+        [
+            { name: 'Nominal', value: formatMoney(amount), inline: true },
+            { name: `Total ${isDirty ? 'Kotor' : 'Kas'}`, value: formatMoney(newBalance), inline: true }
+        ]
+    );
+
+    showToast(`${actionName} ${accountName} completed`, 'success');
+    await fetchFunds();
+    fetchTickerLogs();
+}
+
+async function adjustFunds() {
+    if (currentRole === 'tamu') return; const { value: input } = await Swal.fire({ title: 'Treasury Adjustment', input: 'text', inputLabel: `Current treasury: ${formatMoney(currentFunds)}\nUse a negative value to withdraw`, showCancelButton: true, confirmButtonColor: '#10b981', background: isHackerMode ? '#080503' : '#120d0a', color: isHackerMode ? '#f0dba5' : '#f3ead9' }); if (!input) return; const amount = parseFloat(input); if (isNaN(amount)) return showMessage("Invalid Amount", "Masukkan nominal yang valid.", "error");
+    const newBalance = currentFunds + amount; const { error } = await db.from('faction_funds').update({ balance: newBalance }).eq('id', 1); if (!error) { const type = amount >= 0 ? 'Deposit' : 'Tarik'; await db.from('vault_logs').insert([{ type: type, amount: Math.abs(amount), operator: getOperatorName() + " (Manual)" }]); await sendToDiscord(`💰 Log Brankas: ${type}`, `Operator **${getOperatorName()}** menyesuaikan kas.`, amount >= 0 ? 3066993 : 15158332, [{ name: "Nominal", value: formatMoney(Math.abs(amount)), inline: true }, { name: "Total Kas", value: formatMoney(newBalance), inline: true }]); showToast('Treasury balance updated', 'success'); await fetchFunds(); fetchTickerLogs(); }
+}
+async function adjustDirtyFunds() {
+    if (currentRole === 'tamu') return; const { value: input } = await Swal.fire({ title: 'Unprocessed Funds Adjustment', input: 'text', inputLabel: `Current unprocessed funds: ${formatMoney(currentDirtyFunds)}\nUse a negative value to withdraw`, showCancelButton: true, confirmButtonColor: '#ef4444', background: isHackerMode ? '#080503' : '#120d0a', color: isHackerMode ? '#f0dba5' : '#f3ead9' }); if (!input) return; const amount = parseFloat(input); if (isNaN(amount)) return showMessage("Invalid Amount", "Masukkan nominal yang valid.", "error");
+    const newBalance = currentDirtyFunds + amount; const { error } = await db.from('faction_funds').update({ balance: newBalance }).eq('id', 2); if (!error) { const type = amount >= 0 ? 'Deposit Kotor' : 'Tarik Kotor'; await db.from('vault_logs').insert([{ type: type, amount: Math.abs(amount), operator: getOperatorName() + " (Manual)" }]); await sendToDiscord(`💸 Log Brankas: ${type}`, `Operator **${getOperatorName()}** menyesuaikan Kotor.`, amount >= 0 ? 15105570 : 10038562, [{ name: "Nominal", value: formatMoney(Math.abs(amount)), inline: true }, { name: "Total Kotor", value: formatMoney(newBalance), inline: true }]); showToast('Unprocessed funds updated', 'success'); await fetchFunds(); fetchTickerLogs(); }
+}
+async function fetchFundLogs() {
+    const tbody = document.getElementById('fund-logs-table-body'); if(!tbody) return;
+    try { const { data, error } = await db.from('vault_logs').select('*').order('created_at', { ascending: false }); if (error) throw error; tbody.innerHTML = data.length === 0 ? `<tr><td colspan="4" class="p-8 text-center text-zinc-500 italic">Belum ada riwayat mutasi kas.</td></tr>` : ''; data.forEach((log, index) => { const localTime = new Date(log.created_at).toLocaleString('id-ID', { hour12: false }); let typeBadge, amtColor, amtSign; if (log.type === 'Deposit') { typeBadge = `<span class="bg-emerald-950/80 text-emerald-400 px-2 py-0.5 rounded text-[10px] font-bold uppercase">Deposit</span>`; amtColor = 'text-emerald-400'; amtSign = '+'; } else if (log.type === 'Tarik') { typeBadge = `<span class="bg-rose-950/80 text-rose-400 px-2 py-0.5 rounded text-[10px] font-bold uppercase">Tarik</span>`; amtColor = 'text-rose-400'; amtSign = '-'; } else if (log.type === 'Deposit Kotor') { typeBadge = `<span class="bg-red-950/80 text-red-500 px-2 py-0.5 rounded text-[10px] font-bold uppercase">Deposit Unprocessed</span>`; amtColor = 'text-red-500'; amtSign = '+'; } else { typeBadge = `<span class="bg-orange-950/80 text-orange-500 px-2 py-0.5 rounded text-[10px] font-bold uppercase">Withdraw Unprocessed</span>`; amtColor = 'text-orange-500'; amtSign = '-'; } tbody.innerHTML += `<tr class="${index % 2 === 0 ? 'bg-zinc-950/50' : 'bg-transparent'} hover:bg-zinc-800/20"><td class="p-3 text-center font-mono text-zinc-500">${localTime}</td><td class="p-3 text-center">${typeBadge}</td><td class="p-3 text-right font-mono font-bold ${amtColor}">${amtSign}${formatMoney(log.amount)}</td><td class="p-3 text-zinc-400 text-xs font-semibold flex items-center gap-2"><i class="fa-solid fa-user-tie text-zinc-600"></i> ${log.operator}</td></tr>`; }); } catch (err) {}
+}
+
+// ==========================================
+// 📦 INVENTORY & UI FORMS
+// ==========================================
+async function fetchInventory() {
+    const statusBadge = document.getElementById('db-status'); const locFilter = document.getElementById('filter-lokasi') ? document.getElementById('filter-lokasi').value : 'Semua';
+    try { let query = db.from('inventory').select('*'); if (locFilter !== 'Semua') query = query.eq('location', locFilter); const { data, error } = await query.order('id', { ascending: true }); if (error) throw error; inventoryData = data; if(statusBadge) statusBadge.innerText = "Terkoneksi"; await fetchFunds(); renderTable(); renderAnalyticsChart(); renderSelectOptions(); updateQuickStats(); await fetchBundles(); markSyncTime(); if(document.getElementById('tab-map').classList.contains('flex')) { updateMapPopups(); } } catch (err) { if(statusBadge) statusBadge.innerText = "Error Koneksi"; }
+}
+function updateQuickStats() { const statJenis = document.getElementById('stat-jenis-barang'); if(statJenis) statJenis.innerText = inventoryData.length; const statKritis = document.getElementById('stat-barang-kritis'); if(statKritis) statKritis.innerText = `${inventoryData.filter(i => i.stock <= currentCriticalLimit).length} Item`; }
+function buildInventoryHTML(dataList, isStaff, tipeTabel) {
+    if(dataList.length === 0) return `<div class="p-6 text-center text-zinc-600 text-xs italic bg-zinc-900/20 rounded">Tidak ada data ${tipeTabel}.</div>`;
+    let html = '<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">';
+    dataList.forEach(item => { const pct = Math.min(100, (item.stock / (currentCriticalLimit * 2)) * 100); const color = item.stock <= currentCriticalLimit ? 'bg-rose-500' : (item.stock <= currentCriticalLimit*1.5 ? 'bg-yellow-500' : 'bg-emerald-500'); const textAlert = item.stock <= currentCriticalLimit ? 'text-rose-500 animate-pulse' : (tipeTabel === 'Senjata' ? 'text-rose-400' : 'text-emerald-400'); const actionBtn = isStaff ? `<div class="flex gap-2 mt-3"><button onclick="handleEditItem(${item.id})" class="flex-1 text-blue-400 hover:text-white border border-blue-900/50 px-2 py-1.5 rounded text-xs hover:bg-blue-600"><i class="fa-solid fa-pen-to-square"></i></button><button onclick="handleDeleteItem(${item.id})" class="flex-1 text-red-500 hover:text-white border border-red-900/50 px-2 py-1.5 rounded text-xs hover:bg-red-600"><i class="fa-solid fa-trash"></i></button></div>` : ''; html += `<div class="inventory-item-card bg-zinc-900/80 border border-zinc-800 p-4 rounded-xl shadow-lg flex flex-col justify-between"><div><div class="flex justify-between items-start mb-2"><h4 class="font-bold text-zinc-200 text-sm">${item.name}</h4><span class="text-[9px] bg-zinc-950 px-2 py-1 rounded text-zinc-400">${getLocationLabel(item.location)}</span></div><div class="text-3xl font-mono font-bold ${textAlert} my-2">${item.stock} <span class="text-[10px] text-zinc-500 font-sans tracking-widest uppercase">Unit</span></div><div class="stock-progress-bg"><div class="stock-progress-fill ${color}" style="width: ${pct}%"></div></div></div>${actionBtn}</div>`; }); return html + '</div>';
+}
+function renderTable() { const searchQ = document.getElementById('search-inventory') ? document.getElementById('search-inventory').value.toLowerCase() : ''; let fData = searchQ ? inventoryData.filter(i => i.name.toLowerCase().includes(searchQ)) : inventoryData; const isStaff = currentRole !== 'tamu'; const cS = document.getElementById('inventory-senjata-container'); const cR = document.getElementById('inventory-resource-container'); if(cS) cS.innerHTML = buildInventoryHTML(fData.filter(i => i.category === 'Senjata'), isStaff, 'Senjata'); if(cR) cR.innerHTML = buildInventoryHTML(fData.filter(i => i.category !== 'Senjata'), isStaff, 'Resource'); }
+function renderSelectOptions() { const opts = `<option value="">-- Kosong --</option>` + inventoryData.map(i => `<option value="${i.id}">[${i.category === 'Senjata'?'🔫':'📦'}] ${i.name} (Stok: ${i.stock})</option>`).join(''); ['satuan-item', 'mutasi-item', 'bundle-item1', 'bundle-item2', 'bundle-item3'].forEach(id => { const el = document.getElementById(id); if(el) el.innerHTML = opts; }); }
+function calcSatuanTotal() { const q = document.getElementById('satuan-qty').value||0; const h = document.getElementById('satuan-harga').value||0; document.getElementById('display-satuan-total').innerText = formatMoney(q*h); }
+function toggleSatuanColors() { const t = document.getElementById('satuan-tipe').value; const b = document.getElementById('satuan-total-box'); const d = document.getElementById('display-satuan-total'); if(t==='Jual') { b.className="p-3 bg-black border border-emerald-900/50 rounded-lg flex justify-between items-center"; d.className="text-lg font-mono font-bold text-emerald-500"; } else { b.className="p-3 bg-black border border-rose-900/50 rounded-lg flex justify-between items-center"; d.className="text-lg font-mono font-bold text-rose-500"; } }
+function calcPaketTotal() { const bId = document.getElementById('paket-bundle').value; const q = document.getElementById('paket-qty').value||0; if(!bId) return; const b = bundlesData.find(x=>x.id==bId); if(b) document.getElementById('display-paket-total').innerText = formatMoney(q*b.price); }
+function togglePaketColors() { const t = document.getElementById('paket-tipe').value; const b = document.getElementById('paket-total-box'); const d = document.getElementById('display-paket-total'); if(t==='Jual') { b.className="p-3 bg-black border border-orange-900/50 rounded-lg flex justify-between items-center"; d.className="text-lg font-mono font-bold text-orange-500"; } else { b.className="p-3 bg-black border border-rose-900/50 rounded-lg flex justify-between items-center"; d.className="text-lg font-mono font-bold text-rose-500"; } }
+function toggleMutasiColors() { const b = document.getElementById('mutasi-btn'); if(document.getElementById('mutasi-tipe').value === 'Ambil') { b.className = "w-full bg-purple-600 hover:bg-purple-700 text-white font-bold uppercase py-3 rounded-lg shadow-lg text-sm flex justify-center gap-2"; } else { b.className = "w-full bg-blue-600 hover:bg-blue-700 text-white font-bold uppercase py-3 rounded-lg shadow-lg text-sm flex justify-center gap-2"; } }
+
+// ==========================================
+// 💸 TRANSAKSI & BUNDLING
+// ==========================================
+async function fetchBundles() { try { const { data, error } = await db.from('bundles').select('*').order('id', { ascending: true }); if (!error) { bundlesData = data; renderBundlesTable(); } } catch (e) {} }
+function renderBundlesTable() {
+    const sel = document.getElementById('paket-bundle'); if(sel) sel.innerHTML = `<option value="">-- Pilih Paket --</option>` + bundlesData.map(b => `<option value="${b.id}">${b.name} - ${formatMoney(b.price)}</option>`).join(''); const tbody = document.getElementById('bundles-table-body'); if(!tbody) return; tbody.innerHTML = bundlesData.length === 0 ? `<tr><td colspan="4" class="p-8 text-center text-zinc-500 italic">Belum ada paket.</td></tr>` : '';
+    bundlesData.forEach(b => { let items = []; [ [b.item1_id, b.item1_qty], [b.item2_id, b.item2_qty], [b.item3_id, b.item3_qty] ].forEach(x => { if(x[0]) { const i=inventoryData.find(y=>y.id==x[0]); items.push(`<span class="text-zinc-500">» ${i?i.name:'<i class="text-red-500">Terhapus</i>'} <b class="text-orange-500">x${x[1]}</b></span>`); } }); tbody.innerHTML += `<tr class="bg-zinc-950/30 border-b border-zinc-800/50"><td class="p-3 pl-5 font-bold text-orange-500">${b.name}</td><td class="p-3 text-[11px] flex flex-col">${items.join('')}</td><td class="p-3 text-right font-mono text-emerald-400 font-bold">${formatMoney(b.price)}</td><td class="p-3 text-center"><button onclick="deleteBundle(${b.id})" class="text-red-500 hover:text-white hover:bg-red-600 border border-red-900/50 px-3 py-1.5 rounded"><i class="fa-solid fa-trash"></i></button></td></tr>`; });
+}
+async function processTransaction(updates, totalQty, itemName, location, type, unitPrice, totalPrice, target, isPaket = false) {
+    for (let u of updates) { await db.from('inventory').update({ stock: u.newStock }).eq('id', u.id); } const newFunds = type === 'Jual' ? currentFunds + totalPrice : currentFunds - totalPrice; await db.from('faction_funds').update({ balance: newFunds }).eq('id', 1); await db.from('warehouse_logs').insert([{ item_name: itemName, location: location, quantity: totalQty, type: type, operator: getOperatorName(), price: unitPrice, total_price: totalPrice, target_name: target }]); const vType = type === 'Jual' ? 'Deposit' : 'Tarik'; await db.from('vault_logs').insert([{ type: vType, amount: totalPrice, operator: `${getOperatorName()} | Bisnis ${isPaket?'Paket':'Satuan'}` }]); await sendToDiscord(`💼 Estate Transaction: ${type}`, `Operator **${getOperatorName()}** recorded an estate transaction.`, type==='Jual'?3066993:15158332, [{name: "Item", value: itemName, inline: true}, {name: "Jumlah", value: `${totalQty}`, inline: true}, {name: "Total Kas", value: formatMoney(totalPrice), inline: true}]); showToast(`Transaction recorded successfully`, 'success'); await fetchInventory(); fetchTickerLogs(); switchTab('dashboard');
+}
+async function handleBusinessSatuan(e) {
+    e.preventDefault(); if(currentRole === 'tamu') return; const type = document.getElementById('satuan-tipe').value; const itemId = parseInt(document.getElementById('satuan-item').value); if(!itemId) return showMessage('Select an Asset', 'Pilih aset terlebih dahulu sebelum melanjutkan.', 'warning'); const qty = parseInt(document.getElementById('satuan-qty').value); const price = parseFloat(document.getElementById('satuan-harga').value); const target = document.getElementById('satuan-target').value; const item = inventoryData.find(i => i.id === itemId); if (!item) return; const totalPrice = qty * price;
+    if (type === 'Beli') { if (currentFunds < totalPrice) { if(!await confirmTransactionBox('Treasury Insufficient', `Saldo treasury tidak mencukupi. Tetap lanjutkan transaksi?`)) return; } await processTransaction([{id: item.id, newStock: item.stock + qty}], qty, item.name, item.location, 'Beli', price, totalPrice, target); } else { if (item.stock < qty) return showMessage('Insufficient Stock', `Available stock: ${item.stock} units.`, 'error'); await processTransaction([{id: item.id, newStock: item.stock - qty}], qty, item.name, item.location, 'Jual', price, totalPrice, target); } document.getElementById('form-bisnis-satuan').reset(); document.getElementById('display-satuan-total').innerText = '$ 0';
+}
+async function handleBusinessPaket(e) {
+    e.preventDefault(); if(currentRole === 'tamu') return; const type = document.getElementById('paket-tipe').value; const bId = document.getElementById('paket-bundle').value; if(!bId) return showMessage('Select a Package', 'Pilih paket aset terlebih dahulu.', 'warning'); const qty = parseInt(document.getElementById('paket-qty').value); const target = document.getElementById('paket-target').value; const bundle = bundlesData.find(x => x.id == bId); if(!bundle) return; const totalPrice = qty * bundle.price; let updates = []; let itemsToCheck = [ {id: bundle.item1_id, q: bundle.item1_qty}, {id: bundle.item2_id, q: bundle.item2_qty}, {id: bundle.item3_id, q: bundle.item3_qty} ].filter(x => x.id);
+    for (let req of itemsToCheck) { const item = inventoryData.find(x => x.id == req.id); if(!item) return showMessage('Package Incomplete', 'Salah satu aset dalam paket tidak lagi tersedia di registry.', 'error'); const needed = req.q * qty; if(type === 'Jual' && item.stock < needed) return showMessage('Insufficient Stock', `${item.name} membutuhkan ${needed} unit, tersedia ${item.stock} unit.`, 'error'); updates.push({id: item.id, newStock: type === 'Jual' ? item.stock - needed : item.stock + needed}); }
+    if (type === 'Beli' && currentFunds < totalPrice) { if(!await confirmTransactionBox('Treasury Insufficient', `Saldo treasury tidak mencukupi. Tetap lanjutkan transaksi?`)) return; } await processTransaction(updates, qty, `[PAKET] ${bundle.name}`, 'Bundle Area', type, bundle.price, totalPrice, target, true); document.getElementById('form-bisnis-paket').reset(); document.getElementById('display-paket-total').innerText = '$ 0';
+}
+async function handleCreateBundle(e) {
+    e.preventDefault(); if(currentRole === 'tamu') return; const name = document.getElementById('create-bundle-name').value; const price = document.getElementById('create-bundle-price').value; const i1 = document.getElementById('bundle-item1').value; const q1 = document.getElementById('bundle-qty1').value; const i2 = document.getElementById('bundle-item2').value; const q2 = document.getElementById('bundle-qty2').value; const i3 = document.getElementById('bundle-item3').value; const q3 = document.getElementById('bundle-qty3').value; if(!i1) return showMessage('Package Incomplete', 'Paket memerlukan minimal satu aset.', 'error');
+    const {error} = await db.from('bundles').insert([{ name: name, price: price, item1_id: i1||null, item1_qty: q1||null, item2_id: i2||null, item2_qty: q2||null, item3_id: i3||null, item3_qty: q3||null }]); if(!error) { showToast('Bundle configuration saved', 'success'); document.getElementById('form-buat-paket').reset(); fetchBundles(); } else showMessage('Error', error.message, 'error');
+}
+async function deleteBundle(id) { if(currentRole === 'tamu') return; if(await confirmTransactionBox('Remove Package?', 'Konfigurasi paket akan dihapus dari registry.')) { const {error} = await db.from('bundles').delete().eq('id', id); if(!error) { showToast('Package removed', 'success'); fetchBundles(); } } }
+
+// ==========================================
+// 📊 CHART & LOGS
+// ==========================================
+function renderAnalyticsChart() {
+    const canvas = document.getElementById('bloodlineChart'); if (!canvas) return; const ctx = canvas.getContext('2d'); if (liveChartInstance) liveChartInstance.destroy(); liveChartInstance = new Chart(ctx, { type: 'bar', data: { labels: inventoryData.map(i => i.name), datasets: [{ data: inventoryData.map(i => i.stock), backgroundColor: inventoryData.map(i => i.stock <= currentCriticalLimit ? 'rgba(239, 68, 68, 0.6)' : (isHackerMode ? 'rgba(159, 23, 38, 0.48)' : 'rgba(200, 162, 91, 0.48)')), borderColor: inventoryData.map(i => i.stock <= currentCriticalLimit ? 'rgba(239, 68, 68, 1)' : (isHackerMode ? '#f0dba5' : 'rgba(226, 195, 127, 0.95)')), borderWidth: 2, borderRadius: 5 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { color: isHackerMode ? '#f0dba5' : '#a1a1aa' }, grid: { color: isHackerMode ? '#3d2d16' : '#27272a' } }, y: { ticks: { color: isHackerMode ? '#f0dba5' : '#a1a1aa' }, grid: { color: isHackerMode ? '#3d2d16' : '#27272a' } } } } });
+}
+function toggleTimelineView() { isTimelineView = !isTimelineView; const icon = document.getElementById('timeline-toggle-icon'); if(icon) icon.className = isTimelineView ? 'fa-solid fa-list text-zinc-400' : 'fa-solid fa-stream text-zinc-400'; renderLogsTable(); }
+async function fetchTickerLogs() {
+    const ticker = document.getElementById('live-ticker'); if (!ticker) return; try { const { data, error } = await db.from('warehouse_logs').select('*').order('created_at', { ascending: false }).limit(5); if (error || !data || data.length === 0) { ticker.innerText = "Xaviera estate network beroperasi normal."; return; } ticker.innerText = data.map(l => `[${new Date(l.created_at).toLocaleTimeString('id-ID')}] ${l.operator}: ${l.type} ${l.quantity}x ${l.item_name}`).join('  ///  '); } catch (e) { ticker.innerText = "Xaviera private estate network active."; }
+}
+async function fetchLogs() { try { const { data, error } = await db.from('warehouse_logs').select('*').order('created_at', { ascending: false }); if (!error) { globalLogsData = data; renderLogsTable(); } } catch (err) {} }
+function renderLogsTable() {
+    const container = document.getElementById('logs-container'); if(!container) return; const searchQ = document.getElementById('search-logs') ? document.getElementById('search-logs').value.toLowerCase() : ''; let fLogs = searchQ ? globalLogsData.filter(l => l.item_name.toLowerCase().includes(searchQ) || l.operator.toLowerCase().includes(searchQ) || (l.target_name && l.target_name.toLowerCase().includes(searchQ))) : globalLogsData; if(fLogs.length === 0) { container.innerHTML = `<div class="p-8 text-center text-zinc-500 italic">Data aktivitas tidak ditemukan.</div>`; return; }
+    if (isTimelineView) {
+        let html = '<div class="relative border-l-2 border-zinc-800 ml-6 my-4 pl-6 space-y-6">';
+        fLogs.forEach(log => { const localTime = new Date(log.created_at).toLocaleString('id-ID', { hour12: false }); const isPackage = log.item_name.includes('[PAKET]'); let bgIcon = '', icon = '', title = ''; if(log.type === 'Beli' || (log.type === 'Masuk' && log.price > 0)) { bgIcon = 'bg-rose-900/50 text-rose-500'; icon = 'fa-arrow-down'; title = 'Restock Bisnis'; } else if (log.type === 'Jual' || (log.type === 'Keluar' && log.price > 0)) { bgIcon = 'bg-emerald-900/50 text-emerald-500'; icon = 'fa-arrow-up'; title = 'Penjualan Bisnis'; } else if (log.type === 'Simpan' || (log.type === 'Masuk' && log.price === 0)) { bgIcon = 'bg-blue-900/50 text-blue-500'; icon = 'fa-box-archive'; title = 'Deposit Logistik'; } else if (log.type === 'Ambil' || (log.type === 'Keluar' && log.price === 0)) { bgIcon = 'bg-purple-900/50 text-purple-500'; icon = 'fa-hand-holding'; title = 'Ambil Logistik'; } html += `<div class="timeline-item relative bg-zinc-900/50 p-4 rounded-xl border border-zinc-800 shadow-md group"><div class="absolute -left-12 top-4 w-10 h-10 rounded-full ${bgIcon} border border-zinc-700 flex justify-center items-center"><i class="fa-solid ${icon}"></i></div><div class="flex justify-between items-start mb-1"><div><span class="text-[10px] font-bold uppercase text-zinc-500">${title}</span><h4 class="font-bold text-sm ${isPackage ? 'text-orange-400' : 'text-zinc-200'}">${log.quantity}x ${log.item_name}</h4></div><span class="text-xs font-mono text-zinc-500">${localTime}</span></div><p class="text-xs text-zinc-400 mt-2 mb-3 leading-relaxed border-l-2 border-zinc-700 pl-2"><span class="font-semibold text-zinc-300">Ket:</span> ${log.target_name || '-'}<br><span class="font-semibold text-zinc-300">Nilai:</span> ${log.total_price > 0 ? formatMoney(log.total_price) : 'Tanpa Kas'}</p><div class="flex items-center gap-2 text-[10px] uppercase font-bold text-zinc-500 bg-zinc-950 px-2 py-1 rounded inline-flex border border-zinc-800"><i class="fa-solid fa-user-shield"></i> OP: ${log.operator}</div></div>`; }); container.innerHTML = html + '</div>';
+    } else {
+        let tbody = ''; fLogs.forEach((log, index) => { const localTime = new Date(log.created_at).toLocaleString('id-ID', { hour12: false }); const isPackage = log.item_name.includes('[PAKET]'); let tb = '', sign = '', cVal = 'text-zinc-500'; if(log.type === 'Beli' || (log.type === 'Masuk' && log.price > 0)) { tb = `<span class="bg-rose-950/80 text-rose-400 px-2 py-0.5 rounded text-[10px] font-bold uppercase">Restock</span>`; sign = '-'; cVal = 'text-rose-400'; } else if (log.type === 'Jual' || (log.type === 'Keluar' && log.price > 0)) { tb = `<span class="bg-emerald-950/80 text-emerald-400 px-2 py-0.5 rounded text-[10px] font-bold uppercase">Jual</span>`; sign = '+'; cVal = 'text-emerald-400'; } else if (log.type === 'Simpan' || (log.type === 'Masuk' && log.price === 0)) { tb = `<span class="bg-blue-950/80 text-blue-400 px-2 py-0.5 rounded text-[10px] font-bold uppercase">Simpan</span>`; } else if (log.type === 'Ambil' || (log.type === 'Keluar' && log.price === 0)) { tb = `<span class="bg-purple-950/80 text-purple-400 px-2 py-0.5 rounded text-[10px] font-bold uppercase">Ambil</span>`; } tbody += `<tr class="${index % 2 === 0 ? 'bg-zinc-950/50' : 'bg-transparent'} hover:bg-zinc-800/20"><td class="p-3 text-center font-mono text-zinc-500">${localTime}</td><td class="p-3 font-semibold ${isPackage ? 'text-orange-400' : 'text-zinc-200'}">${log.item_name}</td><td class="p-3 text-center">${tb}</td><td class="p-3 text-center font-mono font-bold text-zinc-400">${log.quantity}</td><td class="p-3 text-zinc-400 text-xs">${log.target_name || '-'}</td><td class="p-3 text-right font-mono text-xs text-zinc-500">${log.price > 0 ? formatMoney(log.price) : '-'}</td><td class="p-3 text-right font-mono font-bold ${cVal}">${log.total_price > 0 ? sign+formatMoney(log.total_price) : '-'}</td><td class="p-3 text-zinc-500 text-[11px] font-semibold"><i class="fa-solid fa-user-shield"></i> ${log.operator}</td></tr>`; }); container.innerHTML = `<table class="w-full text-left border-collapse min-w-[1100px]"><thead class="sticky top-0 bg-zinc-900 z-10 shadow-md"><tr class="border-b border-zinc-800 text-zinc-400 text-[11px] uppercase"><th class="p-3 text-center w-32">Waktu</th><th class="p-3">Item/Paket</th><th class="p-3 text-center">Tipe</th><th class="p-3 text-center">Qty</th><th class="p-3">Keterangan</th><th class="p-3 text-right">Harga</th><th class="p-3 text-right">Total Kas</th><th class="p-3 w-36">Operator</th></tr></thead><tbody class="divide-y divide-zinc-900 text-xs md:text-sm">${tbody}</tbody></table>`;
+    }
+}
+
+// ==========================================
+// 📁 EKSPOR & MANAJEMEN GUDANG UTAMA
+// ==========================================
+async function exportMonthlyRecapExcel() {
+    const tM = document.getElementById('rekap-bulan').value; const tY = document.getElementById('rekap-tahun').value; try { const { data: logs, error } = await db.from('warehouse_logs').select('*').order('created_at', { ascending: true }); if (error) throw error; const fLogs = logs.filter(l => { const d = new Date(l.created_at); return String(d.getMonth() + 1).padStart(2, '0') === tM && String(d.getFullYear()) === tY; }); if (fLogs.length === 0) return showMessage('No Records', `Tidak ada catatan untuk periode ${tM}-${tY}.`, 'info'); const rows = fLogs.map((l, i) => ({ "No": i + 1, "Waktu": new Date(l.created_at).toLocaleString('id-ID'), "Item": l.item_name, "Jenis": l.price > 0 ? (l.type==='Beli'||l.type==='Masuk'?'Beli':'Jual') : (l.type==='Simpan'||l.type==='Masuk'?'Deposit':'Ambil'), "Qty": l.quantity, "Ket": l.target_name || '-', "Harga": l.price || 0, "Total Kas": l.total_price || 0, "Operator": l.operator })); const ws = XLSX.utils.json_to_sheet(rows); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Ledger"); XLSX.writeFile(wb, `XAVIERA_ESTATE_AUDIT_${tM}_${tY}.xlsx`); showToast('Archive exported successfully', 'success'); } catch (err) { showMessage('Error', err.message, 'error'); }
+}
+async function handleMutasiGudang(e) {
+    e.preventDefault(); if(currentRole === 'tamu') return; const type = document.getElementById('mutasi-tipe').value; const itemId = parseInt(document.getElementById('mutasi-item').value); if(!itemId) return showMessage('Select an Asset', 'Pilih aset terlebih dahulu sebelum melanjutkan.', 'warning'); const qty = parseInt(document.getElementById('mutasi-qty').value); const target = document.getElementById('mutasi-keterangan').value; const item = inventoryData.find(i => i.id === itemId); if (!item) return; let newStock = item.stock; if(type === 'Ambil') { if (item.stock < qty) return showMessage('Stok Kurang', `Sisa: ${item.stock}.`, 'error'); newStock = item.stock - qty; } else { newStock = item.stock + qty; } const { error } = await db.from('inventory').update({ stock: newStock }).eq('id', item.id); if (!error) { await db.from('warehouse_logs').insert([{ item_name: item.name, location: item.location, quantity: qty, type: type, operator: getOperatorName(), price: 0, total_price: 0, target_name: target }]); await sendToDiscord(`📦 Asset Movement: ${type}`, `Operator **${getOperatorName()}** recorded an inventory movement.`, type==='Ambil'?10181046:3447003, [{ name: "Barang", value: item.name, inline: true }, { name: "Jumlah", value: `${qty}`, inline: true }, { name: "Alasan", value: target, inline: true }]); document.getElementById('form-mutasi-gudang').reset(); showToast(`Asset movement recorded`, 'success'); await fetchInventory(); fetchTickerLogs(); switchTab('dashboard'); }
+}
+async function handleAddNewItem(e) {
+    e.preventDefault(); if(currentRole === 'tamu') return; const name = document.getElementById('input-tambah-nama').value; const loc = document.getElementById('input-tambah-lokasi').value; const stock = parseInt(document.getElementById('input-tambah-stok').value) || 0; const cat = document.getElementById('input-tambah-kategori').value; const { error } = await db.from('inventory').insert([{ name: name, location: loc, stock: stock, category: cat }]); if (!error) { await db.from('warehouse_logs').insert([{ item_name: name, location: loc, quantity: stock, type: 'Simpan', operator: getOperatorName(), price: 0, total_price: 0, target_name: 'Registrasi Baru' }]); await sendToDiscord(`📦 New Estate Asset`, `A new asset was added to the estate registry.`, 3447003, [{ name: "Nama", value: name, inline: true }]); showToast('Asset registered', 'success'); document.getElementById('form-tambah-barang').reset(); await fetchInventory(); fetchTickerLogs(); switchTab('dashboard'); } else showMessage('Operation Failed', error.message, 'error');
+}
+async function handleEditItem(id) {
+    if(currentRole === 'tamu') return; const item = inventoryData.find(i => i.id === id); if(!item) return; const { value: v } = await Swal.fire({ title: 'Edit Asset', html: `<div class="space-y-4 my-2"><input id="swal-edit-name" class="swal2-input !m-0 !bg-zinc-900 !text-zinc-200" value="${item.name}"><select id="swal-edit-category" class="swal2-select !m-0 !bg-zinc-900 !text-zinc-200"><option value="Resource" ${item.category === 'Resource' ? 'selected' : ''}>Resource</option><option value="Senjata" ${item.category === 'Senjata' ? 'selected' : ''}>Senjata</option></select><select id="swal-edit-location" class="swal2-select !m-0 !bg-zinc-900 !text-zinc-200"><option value="Brankas Bos" ${item.location === 'Brankas Bos' ? 'selected' : ''}>Private Vault</option><option value="Loker Bersama" ${item.location === 'Loker Bersama' ? 'selected' : ''}>Shared Depository</option><option value="Gudang Umum" ${item.location === 'Gudang Umum' ? 'selected' : ''}>Central Storehouse</option></select></div>`, showCancelButton: true, confirmButtonColor: '#3b82f6', background: isHackerMode ? '#080503' : '#120d0a', color: isHackerMode ? '#f0dba5' : '#f3ead9', preConfirm: () => { const n = document.getElementById('swal-edit-name').value; if(!n) { Swal.showValidationMessage('Nama aset wajib diisi.'); return false; } return { name: n, category: document.getElementById('swal-edit-category').value, location: document.getElementById('swal-edit-location').value } } }); if (v) { const { error } = await db.from('inventory').update({ name: v.name, category: v.category, location: v.location }).eq('id', id); if (!error) { showToast('Asset record updated', 'success'); await fetchInventory(); } else showMessage('Error', error.message, 'error'); }
+}
+async function handleDeleteItem(id) {
+    if(currentRole === 'tamu') return; if(await confirmTransactionBox('Remove Asset?', 'Aset yang digunakan dalam package dapat menyebabkan package tersebut tidak lengkap. Lanjutkan?')) { const { error } = await db.from('inventory').delete().eq('id', id); if (!error) { showToast('Record removed', 'info'); await fetchInventory(); } }
+}
+
+// ==========================================
+// 👥 HOUSE DIRECTORY & MEMBERS
+// ==========================================
+async function fetchMembers() { try { const { data, error } = await db.from('members').select('*').order('created_at', { ascending: true }); if (error) throw error; membersData = data; renderMembersTable(); } catch (err) {} }
+function renderMembersTable() {
+    const tbody = document.getElementById('roster-table-body'); const countDisplay = document.getElementById('roster-count'); if (!tbody) return; if (countDisplay) countDisplay.innerText = `${membersData.length} Total`; tbody.innerHTML = membersData.length === 0 ? `<tr><td colspan="4" class="p-8 text-center text-zinc-500 italic">Belum ada anggota.</td></tr>` : ''; const isStaff = (currentRole !== 'tamu');
+    membersData.forEach((member, index) => { let statusBadge = ''; if(member.status === 'Aktif') statusBadge = '<span class="bg-emerald-950/80 text-emerald-400 border border-emerald-800 px-2 py-0.5 rounded text-[10px] font-bold uppercase">🟢 Aktif</span>'; else if(member.status === 'Penjara') statusBadge = '<span class="bg-rose-950/80 text-rose-400 border border-rose-800 px-2 py-0.5 rounded text-[10px] font-bold uppercase">🔴 Restricted</span>'; else statusBadge = '<span class="bg-zinc-800 text-zinc-400 border border-zinc-700 px-2 py-0.5 rounded text-[10px] font-bold uppercase">⚪ Inactive</span>'; let rankStyle = 'text-zinc-200'; if(member.rank.includes('President') || member.rank.includes('Sgt') || member.rank.includes('Treasury')) rankStyle = 'text-orange-400 font-bold'; else if(member.rank === 'Prospect' || member.rank === 'Hangaround') rankStyle = 'text-zinc-500'; const actionBtn = isStaff ? `<button onclick="handleDeleteMember(${member.id}, '${member.name}')" class="text-red-500 hover:text-white hover:bg-red-600 border border-red-900/50 px-3 py-1 rounded transition-all mr-1"><i class="fa-solid fa-user-xmark"></i></button>` : ''; tbody.innerHTML += `<tr class="${index % 2 === 0 ? 'bg-zinc-950/50' : 'bg-transparent'} hover:bg-zinc-900/50 transition-colors"><td class="p-3 pl-5 font-bold tracking-wide text-zinc-100">${member.name}</td><td class="p-3 text-sm ${rankStyle}">${getRankLabel(member.rank)}</td><td class="p-3 text-center">${statusBadge}</td><td class="p-3 text-center admin-only ${isStaff ? '' : 'hidden'}">${actionBtn}</td></tr>`; });
+}
+async function handleAddMember(e) { e.preventDefault(); if(currentRole === 'tamu') return; const name = document.getElementById('roster-name').value; const rank = document.getElementById('roster-rank').value; const status = document.getElementById('roster-status').value; const { error } = await db.from('members').insert([{ name: name, rank: rank, status: status }]); if (!error) { showToast('Member added to the house directory', 'success'); document.getElementById('form-tambah-anggota').reset(); fetchMembers(); } else showMessage('Operation Failed', error.message, 'error'); }
+async function handleDeleteMember(id, name) { if(currentRole === 'tamu') return; if(await confirmTransactionBox('Remove Member?', `Hapus ${name} dari Xaviera House Directory?`)) { const { error } = await db.from('members').delete().eq('id', id); if(!error) { showToast('Dihapus', 'info'); fetchMembers(); } } }
+
+// ==========================================
+// 📜 HOUSE CODEX & PROTOCOLS
+// ==========================================
+async function fetchRules() {
+    try { const { data, error } = await db.from('faction_rules').select('*').order('created_at', { ascending: false }); if (error) throw error; rulesData = data; renderRules(); } catch (err) { console.error("Error SOP:", err); }
+}
+
+function renderRules() {
+    const container = document.getElementById('rules-container'); const countDisplay = document.getElementById('rules-count'); if(!container) return;
+    if(countDisplay) countDisplay.innerText = `${rulesData.length} Pasal`;
+    if(rulesData.length === 0) { container.innerHTML = `<div class="p-8 text-center text-zinc-500 italic">Buku panduan masih kosong. Belum ada aturan yang diterbitkan.</div>`; return; }
+    
+    const isStaff = (currentRole !== 'tamu'); let html = '';
+    
+    rulesData.forEach(r => {
+        let badgeClass = 'bg-zinc-800 text-zinc-300';
+        if(r.category === 'Aturan Umum') badgeClass = 'bg-orange-900/50 text-orange-400 border border-orange-800/50';
+        else if(r.category === 'SOP Gudang') badgeClass = 'bg-blue-900/50 text-blue-400 border border-blue-800/50';
+        else if(r.category === 'Hierarki') badgeClass = 'bg-red-900/50 text-red-400 border border-red-800/50';
+        
+        const actionBtn = isStaff ? `<button onclick="handleDeleteRule(${r.id})" class="text-red-500 hover:text-white hover:bg-red-600 border border-red-900/50 px-2.5 py-1.5 rounded text-xs transition-all" title="Hapus Aturan"><i class="fa-solid fa-trash"></i></button>` : '';
+        
+        html += `
+            <div class="bg-zinc-900/60 border border-zinc-800 rounded-lg p-4 shadow-md relative group hover:bg-zinc-900 transition-colors">
+                <div class="flex justify-between items-start mb-3">
+                    <div>
+                        <span class="${badgeClass} px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider mb-2 inline-block">${r.category}</span>
+                        <h3 class="text-zinc-100 font-bold text-base tracking-wide">${r.title}</h3>
+                    </div>
+                    <div class="admin-only ${isStaff ? '' : 'hidden'}">${actionBtn}</div>
+                </div>
+                <p class="text-zinc-400 text-sm leading-relaxed whitespace-pre-wrap border-l-2 border-zinc-700 pl-3">${r.content}</p>
+                <div class="mt-4 text-[10px] text-zinc-500 font-mono text-right border-t border-zinc-800/60 pt-2">
+                    <i class="fa-solid fa-pen-nib mr-1"></i> Ditulis oleh: <span class="text-zinc-400 font-bold">${r.author}</span> | ${new Date(r.created_at).toLocaleString('id-ID')}
+                </div>
+            </div>`;
+    });
+    container.innerHTML = html;
+}
+
+async function handleAddRule(e) {
+    e.preventDefault(); if(currentRole === 'tamu') return;
+    const cat = document.getElementById('rule-category').value; const title = document.getElementById('rule-title').value; const content = document.getElementById('rule-content').value;
+    const {error} = await db.from('faction_rules').insert([{ category: cat, title: title, content: content, author: getOperatorName() }]);
+    if(!error) { showToast('Protocol published', 'success'); document.getElementById('form-tambah-rule').reset(); await sendToDiscord(`📜 House Protocol Published`, `**${title}**\n*Oleh: ${getOperatorName()}*`, 15158332, []); fetchRules(); } else showMessage('Gagal Menyimpan', error.message, 'error');
+}
+
+async function handleDeleteRule(id) {
+    if(currentRole === 'tamu') return;
+    if(await confirmTransactionBox('Remove Protocol?', 'Protokol ini akan dihapus dari House Codex. Lanjutkan?')) { const {error} = await db.from('faction_rules').delete().eq('id', id); if(!error) { showToast('Protocol removed', 'info'); fetchRules(); } }
+}
+
+// ==========================================
+// ✨ INTERACTIVE UI LAYER
+// Hanya mengatur tampilan dan interaksi antarmuka.
+// Tidak mengubah logika transaksi/database.
+// ==========================================
+function animateActiveTab(tabId) {
+    const tab = document.getElementById(`tab-${tabId}`);
+    if (!tab) return;
+    tab.classList.remove('ui-tab-enter');
+    void tab.offsetWidth;
+    tab.classList.add('ui-tab-enter');
+    setTimeout(() => tab.classList.remove('ui-tab-enter'), 380);
+}
+
+function markSyncTime() {
+    const el = document.getElementById('last-sync-time');
+    if (!el) return;
+    const now = new Date();
+    el.innerText = `Sync ${now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}`;
+    const pill = el.closest('.sync-pill');
+    if (pill) {
+        pill.classList.remove('sync-flash');
+        void pill.offsetWidth;
+        pill.classList.add('sync-flash');
+        setTimeout(() => pill.classList.remove('sync-flash'), 650);
+    }
+}
+
+function pulseValue(el) {
+    if (!el) return;
+    el.classList.remove('ui-value-pop');
+    void el.offsetWidth;
+    el.classList.add('ui-value-pop');
+    setTimeout(() => el.classList.remove('ui-value-pop'), 380);
+}
+
+function setupValueObservers() {
+    const ids = [
+        'stat-kas-bersih',
+        'stat-kas-kotor',
+        'stat-jenis-barang',
+        'stat-barang-kritis',
+        'display-faction-funds',
+        'display-dirty-funds'
+    ];
+
+    ids.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el || el.dataset.uiObserved === 'true') return;
+        el.dataset.uiObserved = 'true';
+        let lastText = el.textContent;
+        const observer = new MutationObserver(() => {
+            const nextText = el.textContent;
+            if (nextText === lastText) return;
+            lastText = nextText;
+            pulseValue(el);
+        });
+        observer.observe(el, { childList: true, characterData: true, subtree: true });
+    });
+}
+
+function setupKpiInteraction() {
+    document.querySelectorAll('.kpi-card').forEach(card => {
+        if (card.dataset.interactiveReady === 'true') return;
+        card.dataset.interactiveReady = 'true';
+
+        card.addEventListener('pointermove', event => {
+            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+            if (event.pointerType && event.pointerType !== 'mouse') return;
+            const rect = card.getBoundingClientRect();
+            const x = ((event.clientX - rect.left) / rect.width) * 100;
+            const y = ((event.clientY - rect.top) / rect.height) * 100;
+            card.style.setProperty('--mouse-x', `${x}%`);
+            card.style.setProperty('--mouse-y', `${y}%`);
+
+            const rx = ((event.clientY - rect.top) / rect.height - 0.5) * -2.4;
+            const ry = ((event.clientX - rect.left) / rect.width - 0.5) * 2.8;
+            card.style.transform = `perspective(700px) rotateX(${rx}deg) rotateY(${ry}deg) translateY(-2px)`;
+        });
+
+        card.addEventListener('pointerleave', () => {
+            card.style.transform = '';
+        });
+    });
+}
+
+function createRipple(event) {
+    const button = event.target.closest('button');
+    if (!button || button.disabled || button.closest('.swal2-container')) return;
+
+    const rect = button.getBoundingClientRect();
+    const ripple = document.createElement('span');
+    ripple.className = 'ui-ripple';
+    ripple.style.left = `${event.clientX - rect.left}px`;
+    ripple.style.top = `${event.clientY - rect.top}px`;
+    button.appendChild(ripple);
+    setTimeout(() => ripple.remove(), 520);
+}
+
+function setRefreshFeedback() {
+    const btn = document.getElementById('refresh-dashboard-btn');
+    if (!btn || btn.dataset.feedbackReady === 'true') return;
+    btn.dataset.feedbackReady = 'true';
+    btn.addEventListener('click', () => {
+        btn.classList.add('ui-refreshing');
+        setTimeout(() => btn.classList.remove('ui-refreshing'), 850);
+    });
+}
+
+function getVisibleCommandItems() {
+    return Array.from(document.querySelectorAll('#command-list .command-item'))
+        .filter(item => !item.classList.contains('hidden') && item.style.display !== 'none');
+}
+
+function selectCommandItem(index) {
+    const items = getVisibleCommandItems();
+    items.forEach(item => item.classList.remove('command-selected'));
+    if (!items.length) return;
+    const safeIndex = ((index % items.length) + items.length) % items.length;
+    items[safeIndex].classList.add('command-selected');
+    items[safeIndex].scrollIntoView({ block: 'nearest' });
+}
+
+function openCommandPalette() {
+    const palette = document.getElementById('command-palette');
+    const input = document.getElementById('command-search');
+    if (!palette || !input) return;
+
+    palette.classList.remove('hidden');
+    palette.setAttribute('aria-hidden', 'false');
+    input.value = '';
+    filterCommandPalette('');
+    document.body.classList.add('command-open');
+    setTimeout(() => {
+        input.focus();
+        selectCommandItem(0);
+    }, 30);
+}
+
+function closeCommandPalette() {
+    const palette = document.getElementById('command-palette');
+    if (!palette) return;
+    palette.classList.add('hidden');
+    palette.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('command-open');
+}
+
+function filterCommandPalette(query) {
+    const q = String(query || '').trim().toLowerCase();
+    let visibleCount = 0;
+
+    document.querySelectorAll('#command-list .command-item').forEach(item => {
+        // Tetap hormati .admin-only yang disembunyikan oleh setupRoleUI().
+        if (item.classList.contains('admin-only') && currentRole === 'tamu') {
+            item.style.display = 'none';
+            return;
+        }
+        const label = (item.dataset.label || item.textContent || '').toLowerCase();
+        const match = !q || label.includes(q);
+        item.style.display = match ? '' : 'none';
+        if (match) visibleCount++;
+    });
+
+    const empty = document.getElementById('command-empty');
+    if (empty) empty.classList.toggle('hidden', visibleCount > 0);
+    selectCommandItem(0);
+}
+
+function setupCommandPalette() {
+    const openBtn = document.getElementById('command-menu-btn');
+    const palette = document.getElementById('command-palette');
+    const input = document.getElementById('command-search');
+    if (!openBtn || !palette || !input || palette.dataset.ready === 'true') return;
+    palette.dataset.ready = 'true';
+
+    openBtn.addEventListener('click', openCommandPalette);
+    palette.querySelectorAll('[data-command-close]').forEach(el => el.addEventListener('click', closeCommandPalette));
+
+    input.addEventListener('input', () => filterCommandPalette(input.value));
+
+    document.querySelectorAll('#command-list .command-item').forEach(item => {
+        item.addEventListener('click', () => {
+            const tab = item.dataset.tab;
+            if (tab) switchTab(tab);
+            closeCommandPalette();
+        });
+    });
+
+    document.addEventListener('keydown', event => {
+        const isShortcut = (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k';
+        if (isShortcut) {
+            event.preventDefault();
+            if (palette.classList.contains('hidden')) openCommandPalette();
+            else closeCommandPalette();
+            return;
+        }
+
+        if (palette.classList.contains('hidden')) return;
+
+        if (event.key === 'Escape') {
+            event.preventDefault();
+            closeCommandPalette();
+            return;
+        }
+
+        const items = getVisibleCommandItems();
+        if (!items.length) return;
+        let index = items.findIndex(item => item.classList.contains('command-selected'));
+        if (index < 0) index = 0;
+
+        if (event.key === 'ArrowDown') {
+            event.preventDefault();
+            selectCommandItem(index + 1);
+        } else if (event.key === 'ArrowUp') {
+            event.preventDefault();
+            selectCommandItem(index - 1);
+        } else if (event.key === 'Enter') {
+            const selected = items[index] || items[0];
+            if (selected) {
+                event.preventDefault();
+                selected.click();
+            }
+        }
+    });
+}
+
+function setupInteractiveUI() {
+    setupKpiInteraction();
+    setupValueObservers();
+    setRefreshFeedback();
+    setupCommandPalette();
+    document.addEventListener('pointerdown', createRipple);
+
+    const inventoryRoot = document.getElementById('tab-dashboard');
+    if (inventoryRoot) {
+        const observer = new MutationObserver(() => setupKpiInteraction());
+        observer.observe(inventoryRoot, { childList: true, subtree: true });
+    }
+}
+
+// ==========================================
+// 🔄 SUPABASE REALTIME (LIVE SYNC)
+// ==========================================
+function enableRealtimeSync() {
+    db.channel('bloodline-radar')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'inventory' }, p => { fetchInventory(); })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'faction_funds' }, p => { fetchFunds(); })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'warehouse_logs' }, p => { fetchLogs(); })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'vault_logs' }, p => { if (document.getElementById('tab-logs').classList.contains('block')) fetchFundLogs(); })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'members' }, p => { fetchMembers(); })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'faction_rules' }, p => { fetchRules(); })
+        .subscribe((status) => {
+            if (status === 'SUBSCRIBED') { const sb = document.getElementById('db-status'); if(sb) { sb.innerHTML = `<i class="fa-solid fa-satellite-dish animate-pulse mr-1"></i> LIVE SYNC`; sb.className = "hidden md:inline-block text-[10px] bg-blue-900/40 text-blue-400 px-2 py-1 rounded border border-blue-700/50"; } }
+        });
+}
+
+setupInteractiveUI();
+syncSidebarForViewport();
